@@ -1,121 +1,240 @@
+import { useState, useEffect } from "react";
 import { useGetSettings, useUpdateSettings } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, User, Moon, Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function Settings() {
   const { data: settings, isLoading } = useGetSettings();
   const updateSettings = useUpdateSettings();
   const queryClient = useQueryClient();
+  const { isSupported, isSubscribed, isLoading: pushLoading, permission, subscribe, unsubscribe, sendTest, updateSchedule } = usePushNotifications();
 
-  const [darkMode, setDarkMode] = useState(true);
+  const [userName, setUserName] = useState("");
+  const [morningEnabled, setMorningEnabled] = useState(true);
+  const [morningTime, setMorningTime] = useState("07:00");
+  const [eveningEnabled, setEveningEnabled] = useState(true);
+  const [eveningTime, setEveningTime] = useState("21:00");
+  const [saved, setSaved] = useState(false);
 
-  // Sync initial dark mode state
   useEffect(() => {
     if (settings) {
-      setDarkMode(settings.darkMode);
+      setUserName(settings.userName || "");
+      setMorningEnabled(settings.morningReminderEnabled ?? true);
+      setMorningTime(settings.morningReminderTime || "07:00");
+      setEveningEnabled(settings.eveningReminderEnabled ?? true);
+      setEveningTime(settings.eveningReminderTime || "21:00");
     }
   }, [settings]);
 
-  // Apply dark mode immediately when toggled
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-  }, [darkMode]);
-
-  if (isLoading) {
-    return <div className="flex h-[50vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    
     updateSettings.mutate({
       data: {
-        userName: fd.get("userName") as string,
-        darkMode,
-        morningReminderEnabled: fd.get("morningReminderEnabled") === "on",
-        morningReminderTime: fd.get("morningReminderTime") as string,
+        userName,
+        darkMode: true,
+        morningReminderEnabled: morningEnabled,
+        morningReminderTime: morningTime,
+        eveningReminderEnabled: eveningEnabled,
+        eveningReminderTime: eveningTime,
       }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        if (isSubscribed) {
+          updateSchedule(morningEnabled, morningTime, eveningEnabled, eveningTime);
+        }
       }
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-[#94aaff] border-t-transparent animate-spin" />
+          <span className="text-[#adaaaa] text-sm">Loading settings...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8 pb-20 max-w-3xl mx-auto">
+    <div className="py-6 space-y-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-3xl font-display font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your operating system preferences.</p>
+        <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#adaaaa] font-bold mb-1">Preferences</p>
+        <h2 className="font-['Manrope'] font-extrabold text-4xl tracking-tight">Settings</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <Card className="p-6 bg-card border-border/50 rounded-3xl">
-          <div className="flex items-center gap-3 mb-6 border-b border-border/50 pb-4">
-            <div className="p-2 bg-primary/10 text-primary rounded-lg"><User className="h-5 w-5" /></div>
-            <h2 className="text-xl font-bold">Profile</h2>
-          </div>
-          
-          <div className="space-y-4 max-w-md">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Display Name</label>
-              <Input name="userName" defaultValue={settings?.userName} className="bg-background h-11" />
+      <form onSubmit={handleSave} className="space-y-5">
+        {/* Profile */}
+        <div className="bg-[#131313] rounded-2xl p-6 ds-ghost-border space-y-4">
+          <div className="flex items-center gap-3 pb-4 border-b border-[rgba(72,72,71,0.1)]">
+            <div className="p-2 bg-[rgba(148,170,255,0.1)] rounded-xl">
+              <span className="material-symbols-outlined text-[#94aaff]">person</span>
             </div>
+            <h3 className="font-['Manrope'] font-bold text-lg">Profile</h3>
           </div>
-        </Card>
 
-        <Card className="p-6 bg-card border-border/50 rounded-3xl">
-          <div className="flex items-center gap-3 mb-6 border-b border-border/50 pb-4">
-            <div className="p-2 bg-accent/10 text-accent rounded-lg"><Moon className="h-5 w-5" /></div>
-            <h2 className="text-xl font-bold">Appearance</h2>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-foreground">Dark Mode</p>
-              <p className="text-sm text-muted-foreground">The best way to work.</p>
-            </div>
-            <Switch 
-              checked={darkMode} 
-              onCheckedChange={setDarkMode} 
+          <div className="space-y-2">
+            <label className="text-[10px] font-['Inter'] uppercase tracking-widest text-[#adaaaa] font-bold">Display Name</label>
+            <input
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              className="w-full bg-[#262626] border-none rounded-xl py-4 px-5 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-medium"
+              placeholder="Your name..."
             />
           </div>
-        </Card>
 
-        <Card className="p-6 bg-card border-border/50 rounded-3xl">
-          <div className="flex items-center gap-3 mb-6 border-b border-border/50 pb-4">
-            <div className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg"><Bell className="h-5 w-5" /></div>
-            <h2 className="text-xl font-bold">Notifications</h2>
-          </div>
-          
-          <div className="space-y-6 max-w-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-foreground">Morning Reminder</p>
-                <p className="text-sm text-muted-foreground">Start the day right.</p>
-              </div>
-              <Switch name="morningReminderEnabled" defaultChecked={settings?.morningReminderEnabled} />
+          <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+            <div>
+              <p className="font-medium text-sm">Dark Mode</p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">Always on — Digital Sanctuary</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Morning Time</label>
-              <Input name="morningReminderTime" type="time" defaultValue={settings?.morningReminderTime} className="bg-background h-11" />
+            <div className="w-12 h-7 rounded-full bg-[#94aaff] flex items-center justify-end px-1">
+              <div className="w-5 h-5 rounded-full bg-[#000]" />
             </div>
           </div>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" size="lg" className="px-8 rounded-xl bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/25 hover:opacity-90" disabled={updateSettings.isPending}>
-            {updateSettings.isPending ? "Saving..." : "Save Preferences"}
-          </Button>
         </div>
+
+        {/* Notification Reminders */}
+        <div className="bg-[#131313] rounded-2xl p-6 ds-ghost-border space-y-4">
+          <div className="flex items-center gap-3 pb-4 border-b border-[rgba(72,72,71,0.1)]">
+            <div className="p-2 bg-[rgba(255,189,92,0.1)] rounded-xl">
+              <span className="material-symbols-outlined text-[#ffbd5c]">notifications</span>
+            </div>
+            <h3 className="font-['Manrope'] font-bold text-lg">Reminders</h3>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+            <div>
+              <p className="font-medium text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#ffbd5c]">wb_sunny</span>
+                Morning Check-in
+              </p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">Daily morning reminder</p>
+            </div>
+            <Toggle checked={morningEnabled} onChange={setMorningEnabled} color="#ffbd5c" />
+          </div>
+
+          {morningEnabled && (
+            <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+              <span className="text-[#adaaaa] text-sm">Morning time</span>
+              <input
+                type="time"
+                value={morningTime}
+                onChange={(e) => setMorningTime(e.target.value)}
+                className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+            <div>
+              <p className="font-medium text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#94aaff]">bedtime</span>
+                Evening Reflection
+              </p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">End-of-day review reminder</p>
+            </div>
+            <Toggle checked={eveningEnabled} onChange={setEveningEnabled} color="#94aaff" />
+          </div>
+
+          {eveningEnabled && (
+            <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+              <span className="text-[#adaaaa] text-sm">Evening time</span>
+              <input
+                type="time"
+                value={eveningTime}
+                onChange={(e) => setEveningTime(e.target.value)}
+                className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Push Notifications */}
+        {isSupported && (
+          <div className="bg-[#131313] rounded-2xl p-6 ds-ghost-border space-y-4">
+            <div className="flex items-center gap-3 pb-4 border-b border-[rgba(72,72,71,0.1)]">
+              <div className="p-2 bg-[rgba(92,253,128,0.1)] rounded-xl">
+                <span className="material-symbols-outlined text-[#5cfd80]">notifications_active</span>
+              </div>
+              <h3 className="font-['Manrope'] font-bold text-lg">Push Notifications</h3>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+              <div>
+                <p className="font-medium text-sm">Browser Notifications</p>
+                <p className="text-[#adaaaa] text-xs mt-0.5">
+                  {isSubscribed ? "Active — receiving push notifications" : permission === "denied" ? "Blocked by browser" : "Enable for scheduled reminders"}
+                </p>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isSubscribed ? "bg-[rgba(92,253,128,0.1)] text-[#5cfd80]" : "bg-[rgba(72,72,71,0.1)] text-[#adaaaa]"}`}>
+                {isSubscribed ? "Active" : "Inactive"}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              {!isSubscribed ? (
+                <button
+                  type="button"
+                  disabled={pushLoading || permission === "denied"}
+                  onClick={() => subscribe(morningEnabled, morningTime, eveningEnabled, eveningTime)}
+                  className="flex-1 ds-liquid-gradient py-3.5 rounded-2xl font-['Manrope'] font-bold text-[#000] text-sm ds-inner-glow active:scale-[0.98] transition-transform disabled:opacity-40"
+                >
+                  {pushLoading ? "Enabling..." : permission === "denied" ? "Blocked by Browser" : "Enable Notifications"}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={pushLoading}
+                    onClick={sendTest}
+                    className="flex-1 py-3.5 rounded-2xl font-['Manrope'] font-bold text-sm bg-[rgba(148,170,255,0.1)] text-[#94aaff] border border-[rgba(148,170,255,0.2)] hover:bg-[rgba(148,170,255,0.15)] active:scale-[0.98] transition-all"
+                  >
+                    Test Notification
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pushLoading}
+                    onClick={unsubscribe}
+                    className="flex-1 py-3.5 rounded-2xl font-['Manrope'] font-bold text-sm bg-[rgba(255,110,132,0.1)] text-[#ff6e84] border border-[rgba(255,110,132,0.2)] hover:bg-[rgba(255,110,132,0.15)] active:scale-[0.98] transition-all"
+                  >
+                    Disable
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Save */}
+        <button
+          type="submit"
+          disabled={updateSettings.isPending}
+          className="w-full ds-liquid-gradient py-4 rounded-2xl font-['Manrope'] font-extrabold text-[#000] text-base ds-inner-glow active:scale-[0.98] transition-transform shadow-[0_20px_40px_-10px_rgba(148,170,255,0.3)] disabled:opacity-50"
+        >
+          {updateSettings.isPending ? "Saving..." : saved ? "✓ Saved!" : "Save Changes"}
+        </button>
       </form>
     </div>
+  );
+}
+
+function Toggle({ checked, onChange, color }: { checked: boolean; onChange: (v: boolean) => void; color: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="w-12 h-7 rounded-full transition-colors duration-200 flex items-center px-0.5 relative"
+      style={{ backgroundColor: checked ? color : "#262626" }}
+    >
+      <div
+        className="absolute w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200"
+        style={{ transform: checked ? "translateX(20px)" : "translateX(2px)" }}
+      />
+    </button>
   );
 }

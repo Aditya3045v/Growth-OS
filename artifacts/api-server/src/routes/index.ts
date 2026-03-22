@@ -8,6 +8,7 @@ import notesRouter from "./notes";
 import checkinsRouter from "./checkins";
 import statsRouter from "./stats";
 import settingsRouter from "./settings";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(notesRouter);
 router.use(checkinsRouter);
 router.use(statsRouter);
 router.use(settingsRouter);
+router.use(notificationsRouter);
 
 export default router;

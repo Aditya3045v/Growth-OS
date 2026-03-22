@@ -1,345 +1,211 @@
 import { useGetDashboardStats, useGetStreak, useGetSettings, useGetAnalytics } from "@workspace/api-client-react";
-import { Flame, CheckCircle2, Target, Zap, Activity, Users } from "lucide-react";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import { useLocation } from "wouter";
 
-const PIE_COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#f43f5e', '#64748b'];
+const PIE_COLORS = ["#94aaff", "#5cfd80", "#ffbd5c", "#ff6e84", "#ec9e00", "#484847"];
 
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
-  const { data: streak, isLoading: streakLoading } = useGetStreak();
+  const { data: stats } = useGetDashboardStats();
+  const { data: streak } = useGetStreak();
   const { data: settings } = useGetSettings();
-  const { data: analytics, isLoading: analyticsLoading } = useGetAnalytics({ days: 14 });
+  const { data: analytics } = useGetAnalytics({ days: 14 });
+  const [, navigate] = useLocation();
 
   const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    const h = new Date().getHours();
+    return h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
   };
 
-  const name = settings?.userName || "User";
+  const name = settings?.userName || "Alex";
   const chartData = analytics?.dailySummaries?.slice(-14) || [];
+  const habitPct = Math.round(((stats?.habitsCompletedToday || 0) / Math.max(stats?.habitsTotalToday || 1, 1)) * 100);
+  const taskPct = Math.round(((stats?.tasksCompletedToday || 0) / Math.max(stats?.tasksTotalToday || 1, 1)) * 100);
 
   return (
-    <div className="space-y-8 pb-10">
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-card/30 p-6 rounded-3xl border border-border/50">
-        <div>
-          <h2 className="text-muted-foreground font-medium flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4" />
-            {format(new Date(), "EEEE, MMMM do")}
-          </h2>
-          <h1 className="text-4xl font-display font-bold mt-2 text-foreground tracking-tight">
-            {greeting()},{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-              {name}
-            </span>
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">Let's make today count.</p>
+    <div className="space-y-6 py-6">
+      {/* Greeting */}
+      <header className="space-y-1">
+        <h2 className="font-['Manrope'] font-extrabold text-4xl tracking-tight leading-none">
+          {greeting()},{" "}
+          <span className="text-[#94aaff] italic">{name}</span>
+        </h2>
+        <p className="text-[#adaaaa] font-medium">
+          {format(new Date(), "EEEE, MMMM d")} &bull; {format(new Date(), "h:mm a")}
+        </p>
+      </header>
+
+      {/* Bento Row 1: Streak + Stats */}
+      <div className="grid grid-cols-12 gap-4">
+        {/* Streak */}
+        <div className="col-span-12 sm:col-span-4 bg-[#131313] p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between ds-ghost-border">
+          <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+            <span className="material-symbols-outlined text-[80px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+          </div>
+          <span className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">Current Streak</span>
+          <div>
+            <div className="text-6xl font-['Manrope'] font-extrabold text-[#94aaff]">{streak?.currentStreak || 0}</div>
+            <p className="text-[#adaaaa] text-sm mt-1">Days of consistent growth</p>
+          </div>
+          <div className="flex gap-1 mt-3">
+            {[...Array(Math.min(streak?.currentStreak || 0, 7))].map((_, i) => (
+              <div key={i} className="h-1 flex-1 rounded-full bg-[#94aaff]" />
+            ))}
+            {[...Array(Math.max(0, 7 - (streak?.currentStreak || 0)))].map((_, i) => (
+              <div key={i} className="h-1 flex-1 rounded-full bg-[#262626]" />
+            ))}
+          </div>
         </div>
 
-        {streakLoading ? (
-          <Skeleton className="h-16 w-32 rounded-2xl" />
-        ) : (
-          <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-inner shadow-orange-500/5">
-            <div className="bg-gradient-to-b from-orange-400 to-red-500 p-3 rounded-xl shadow-lg shadow-orange-500/30">
-              <Flame className="h-6 w-6 text-white" />
+        {/* Stats Grid */}
+        <div className="col-span-12 sm:col-span-8 grid grid-cols-3 gap-4">
+          <StatCard label="Habits" value={`${stats?.habitsCompletedToday || 0}/${stats?.habitsTotalToday || 0}`} accent="#5cfd80" />
+          <StatCard label="Tasks" value={`${stats?.tasksCompletedToday || 0}/${stats?.tasksTotalToday || 0}`} accent="#94aaff" />
+          <StatCard label="Active Leads" value={`${stats?.activeLeads || 0}`} accent="#ffbd5c" />
+        </div>
+      </div>
+
+      {/* Daily Progress Ring + Habit/Task bars */}
+      <div className="grid grid-cols-12 gap-4">
+        {/* Circular progress */}
+        <div className="col-span-12 sm:col-span-4 bg-[#131313] p-6 rounded-2xl ds-ghost-border flex flex-col items-center justify-center gap-4">
+          <span className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">Daily Progress</span>
+          <div className="relative w-32 h-32 flex items-center justify-center">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+              <circle cx="64" cy="64" r="56" fill="none" stroke="#262626" strokeWidth="10" />
+              <circle
+                cx="64" cy="64" r="56" fill="none"
+                stroke="url(#pg-grad)" strokeWidth="10"
+                strokeDasharray={2 * Math.PI * 56}
+                strokeDashoffset={2 * Math.PI * 56 * (1 - habitPct / 100)}
+                strokeLinecap="round"
+              />
+              <defs>
+                <linearGradient id="pg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#94aaff" />
+                  <stop offset="100%" stopColor="#809bff" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-['Manrope'] font-black">{habitPct}%</span>
             </div>
+          </div>
+          <p className="text-[#adaaaa] text-xs text-center leading-relaxed">
+            {stats?.habitsCompletedToday || 0} of {stats?.habitsTotalToday || 0} habits complete
+          </p>
+        </div>
+
+        {/* Progress bars */}
+        <div className="col-span-12 sm:col-span-8 bg-[#131313] p-6 rounded-2xl ds-ghost-border space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="font-['Manrope'] font-bold text-lg">Outreach Activity</h3>
+            <button onClick={() => navigate("/analytics")} className="text-[#94aaff] text-xs font-['Inter'] uppercase tracking-widest hover:underline">Full Report</button>
+          </div>
+
+          {[
+            { label: "Habits", pct: habitPct, accent: "#5cfd80" },
+            { label: "Tasks", pct: taskPct, accent: "#94aaff" },
+            { label: "Productivity", pct: Math.round(stats?.productivityScore || 0), accent: "#ffbd5c" },
+          ].map((item) => (
+            <div key={item.label} className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#adaaaa] font-medium">{item.label}</span>
+                <span style={{ color: item.accent }} className="text-xs font-bold">{item.pct}%</span>
+              </div>
+              <div className="h-1.5 bg-[#262626] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-1000"
+                  style={{ width: `${item.pct}%`, backgroundColor: item.accent, boxShadow: `0 0 8px ${item.accent}60` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lead Pipeline */}
+      {analytics?.leadStatusCounts && analytics.leadStatusCounts.length > 0 && (
+        <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
+          <h3 className="font-['Manrope'] font-bold text-lg mb-4">Lead Pipeline</h3>
+          <div className="space-y-3">
+            {analytics.leadStatusCounts.map((entry, idx) => (
+              <div key={entry.status} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                  <span className="capitalize text-sm font-medium">{entry.status.replace("_", " ")}</span>
+                </div>
+                <span className="font-['Manrope'] font-bold text-xl" style={{ color: PIE_COLORS[idx % PIE_COLORS.length] }}>
+                  {String(entry.count).padStart(2, "0")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 14-day Productivity Chart */}
+      {chartData.length > 0 && (
+        <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <p className="text-sm font-semibold text-orange-500 uppercase tracking-wider">Current Streak</p>
-              <p className="text-3xl font-display font-bold text-foreground">
-                {streak?.currentStreak || 0} Days
-              </p>
+              <h3 className="font-['Manrope'] font-bold text-lg">Productivity Trends</h3>
+              <p className="text-[#adaaaa] text-sm">Performance over 14 days</p>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <StatCard
-          title="Productivity Score"
-          value={statsLoading ? "..." : `${Math.round(stats?.productivityScore || 0)}%`}
-          icon={<Zap className="h-5 w-5 text-yellow-500" />}
-          gradient="from-yellow-500/20 to-transparent"
-          delay={0.1}
-        />
-        <StatCard
-          title="Tasks Completed"
-          value={statsLoading ? "..." : `${stats?.tasksCompletedToday || 0}/${stats?.tasksTotalToday || 0}`}
-          icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-          gradient="from-emerald-500/20 to-transparent"
-          delay={0.2}
-        />
-        <StatCard
-          title="Habits Done"
-          value={statsLoading ? "..." : `${stats?.habitsCompletedToday || 0}/${stats?.habitsTotalToday || 0}`}
-          icon={<Target className="h-5 w-5 text-primary" />}
-          gradient="from-primary/20 to-transparent"
-          delay={0.3}
-        />
-        <StatCard
-          title="Active Leads"
-          value={statsLoading ? "..." : `${stats?.activeLeads || 0}`}
-          icon={<Users className="h-5 w-5 text-blue-500" />}
-          gradient="from-blue-500/20 to-transparent"
-          delay={0.4}
-        />
-      </div>
-
-      {/* Today's Progress bars */}
-      <div className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-display font-bold">Today's Progress</h3>
-          <Activity className="h-5 w-5 text-muted-foreground" />
-        </div>
-        {statsLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <ProgressBar
-              label="Habit Completion"
-              completed={stats?.habitsCompletedToday || 0}
-              total={stats?.habitsTotalToday || 1}
-              color="from-primary to-accent"
-            />
-            <ProgressBar
-              label="Task Completion"
-              completed={stats?.tasksCompletedToday || 0}
-              total={stats?.tasksTotalToday || 1}
-              color="from-emerald-400 to-emerald-500"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Productivity Line Chart */}
-        <Card className="p-6 bg-card border-border/50 rounded-3xl shadow-sm">
-          <h3 className="font-bold text-lg mb-6">14-Day Productivity Trend</h3>
-          {analyticsLoading ? (
-            <Skeleton className="h-48 w-full rounded-xl" />
-          ) : (
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickFormatter={(v) => v.substring(5, 10)}
-                    tickLine={false}
-                  />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    itemStyle={{ color: "#8b5cf6" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="productivityScore"
-                    name="Score"
-                    stroke="#8b5cf6"
-                    strokeWidth={3}
-                    dot={false}
-                    activeDot={{ r: 5, fill: "#8b5cf6" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Card>
-
-        {/* Lead Pipeline Pie Chart */}
-        <Card className="p-6 bg-card border-border/50 rounded-3xl shadow-sm">
-          <h3 className="font-bold text-lg mb-4">Lead Pipeline</h3>
-          {analyticsLoading ? (
-            <Skeleton className="h-48 w-full rounded-xl" />
-          ) : analytics?.leadStatusCounts && analytics.leadStatusCounts.length > 0 ? (
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={analytics.leadStatusCounts}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    dataKey="count"
-                    nameKey="status"
-                    stroke="none"
-                  >
-                    {analytics.leadStatusCounts.map((_entry, index) => (
-                      <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                    formatter={(val, name) => [val, String(name).replace("_", " ")]}
-                  />
-                  <Legend
-                    formatter={(val) => String(val).replace("_", " ")}
-                    iconType="circle"
-                    iconSize={8}
-                    wrapperStyle={{ fontSize: "11px", textTransform: "capitalize" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-48 flex items-center justify-center">
-              <p className="text-muted-foreground text-sm">No lead data yet.</p>
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Habits + Tasks Bar Chart */}
-      <Card className="p-6 bg-card border-border/50 rounded-3xl shadow-sm">
-        <h3 className="font-bold text-lg mb-6">14-Day Task & Habit Output</h3>
-        {analyticsLoading ? (
-          <Skeleton className="h-56 w-full rounded-xl" />
-        ) : (
-          <div className="h-56 w-full">
+          <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} barSize={14}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                  tickFormatter={(v) => v.substring(5, 10)}
-                  tickLine={false}
-                />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    borderColor: "hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                  cursor={{ fill: "hsl(var(--secondary))" }}
-                />
-                <Bar dataKey="habitsCompleted" name="Habits" fill="#8b5cf6" radius={[4, 4, 0, 0]} stackId="a" />
-                <Bar dataKey="tasksCompleted" name="Tasks" fill="#06b6d4" radius={[4, 4, 0, 0]} stackId="a" />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
+              <BarChart data={chartData} barSize={12}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(72,72,71,0.1)" vertical={false} />
+                <XAxis dataKey="date" stroke="#767575" fontSize={10} tickFormatter={(v) => v.substring(5, 10)} tickLine={false} axisLine={false} />
+                <YAxis stroke="#767575" fontSize={10} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "none", borderRadius: "8px", fontSize: "11px" }} cursor={{ fill: "rgba(148,170,255,0.05)" }} />
+                <Bar dataKey="habitsCompleted" name="Habits" fill="#94aaff" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="tasksCompleted" name="Tasks" fill="#5cfd80" radius={[4, 4, 0, 0]} stackId="a" />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        )}
-      </Card>
-    </div>
-  );
-}
+        </div>
+      )}
 
-function ProgressBar({
-  label,
-  completed,
-  total,
-  color,
-}: {
-  label: string;
-  completed: number;
-  total: number;
-  color: string;
-}) {
-  const pct = Math.round((completed / Math.max(total, 1)) * 100);
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm font-medium">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="text-foreground">{pct}%</span>
-      </div>
-      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className={`h-full bg-gradient-to-r ${color}`}
-        />
+      {/* Habit Completion Ring CTA */}
+      <div className="bg-[#131313] rounded-2xl p-6 ds-ghost-border flex items-center gap-4">
+        <div className="relative w-16 h-16 shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="27" fill="none" stroke="#262626" strokeWidth="6" />
+            <circle
+              cx="32" cy="32" r="27" fill="none"
+              stroke="#5cfd80" strokeWidth="6"
+              strokeDasharray={2 * Math.PI * 27}
+              strokeDashoffset={2 * Math.PI * 27 * (1 - habitPct / 100)}
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-['Manrope'] font-black text-[#5cfd80]">{habitPct}%</span>
+        </div>
+        <div className="flex-1">
+          <p className="font-['Manrope'] font-bold text-base">Consistency is Key 🔥</p>
+          <p className="text-[#adaaaa] text-sm">You've reached {habitPct}% of your daily output goal.</p>
+        </div>
+        <button
+          onClick={() => navigate("/habits")}
+          className="ds-liquid-gradient text-[#000] font-['Manrope'] font-bold px-4 py-2 rounded-xl text-sm shrink-0 ds-inner-glow active:scale-95 transition-transform"
+        >
+          Complete Day
+        </button>
       </div>
     </div>
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon,
-  gradient,
-  delay,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  gradient: string;
-  delay: number;
-}) {
+function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}>
-      <Card className="overflow-hidden border-border/50 bg-card hover:shadow-xl hover:border-border transition-all duration-300 group">
-        <CardContent className="p-0">
-          <div className={`h-1 w-full bg-gradient-to-r ${gradient}`} />
-          <div className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{title}</p>
-                <h3 className="text-3xl font-display font-bold mt-2 text-foreground">{value}</h3>
-              </div>
-              <div className="p-3 bg-secondary rounded-xl group-hover:scale-110 transition-transform duration-300">
-                {icon}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-function CalendarIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-      <line x1="16" x2="16" y1="2" y2="6" />
-      <line x1="8" x2="8" y1="2" y2="6" />
-      <line x1="3" x2="21" y1="10" y2="10" />
-    </svg>
+    <div className="bg-[#131313] p-4 rounded-2xl ds-ghost-border flex flex-col justify-between gap-2">
+      <span className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">{label}</span>
+      <div className="text-3xl font-['Manrope'] font-bold mt-1" style={{ color: accent }}>{value}</div>
+    </div>
   );
 }

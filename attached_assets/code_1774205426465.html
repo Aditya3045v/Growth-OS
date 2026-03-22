@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings | PGWOS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#000000",
+              "on-tertiary-fixed": "#331f00",
+              "on-primary": "#00257b",
+              "inverse-surface": "#fcf9f8",
+              "secondary-fixed": "#5cfd80",
+              "on-primary-fixed": "#000000",
+              "secondary-container": "#006e2a",
+              "on-primary-container": "#001b61",
+              "surface-variant": "#262626",
+              "outline-variant": "#484847",
+              "on-error": "#490013",
+              "on-secondary": "#005d22",
+              "background": "#0e0e0e",
+              "secondary-fixed-dim": "#4bee74",
+              "on-surface": "#ffffff",
+              "surface-bright": "#2c2c2c",
+              "error-container": "#a70138",
+              "primary-fixed": "#809bff",
+              "on-secondary-fixed": "#004819",
+              "primary-container": "#809bff",
+              "primary": "#94aaff",
+              "surface-container": "#1a1a1a",
+              "outline": "#767575",
+              "on-secondary-fixed-variant": "#006827",
+              "surface": "#0e0e0e",
+              "on-primary-fixed-variant": "#002376",
+              "tertiary-fixed": "#feaa00",
+              "error-dim": "#d73357",
+              "error": "#ff6e84",
+              "on-tertiary": "#5c3b00",
+              "on-secondary-container": "#e4ffe1",
+              "surface-container-highest": "#262626",
+              "secondary": "#5cfd80",
+              "secondary-dim": "#4bee74",
+              "on-error-container": "#ffb2b9",
+              "on-surface-variant": "#adaaaa",
+              "primary-dim": "#3367ff",
+              "on-tertiary-container": "#503300",
+              "tertiary-dim": "#ec9e00",
+              "surface-container-low": "#131313",
+              "on-tertiary-fixed-variant": "#5b3b00",
+              "primary-fixed-dim": "#6c8cff",
+              "surface-dim": "#0e0e0e",
+              "inverse-primary": "#004eea",
+              "surface-tint": "#94aaff",
+              "on-background": "#ffffff",
+              "tertiary-fixed-dim": "#ec9e00",
+              "inverse-on-surface": "#565555",
+              "tertiary": "#ffbd5c",
+              "surface-container-high": "#20201f",
+              "tertiary-container": "#feaa00"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(38, 38, 38, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0e0e0e]/80 backdrop-blur-xl flex items-center justify-between px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="text-[#94aaff] active:scale-95 transition-transform ease-in-out hover:bg-[#2c2c2c] p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-[#94aaff] font-['Manrope'] font-bold text-xl tracking-tight">Settings</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#94aaff] font-extrabold tracking-tighter">ZENITH</span>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto space-y-8">
+<!-- User Profile Section (Bento Style) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="md:col-span-2 bg-surface-container-low p-6 rounded-xl flex items-center gap-6 group transition-all duration-300 hover:bg-surface-container">
+<div class="relative">
+<img alt="Alex Rivera" class="w-20 h-20 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary/50 transition-colors" data-alt="Close up portrait of Alex Rivera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2_Bx84PlbjOYwP1rv4hnRv30f0OwWwkXqJ6xGXPCcpTOBYCXHrJ3T1wNh_aq4nppLg8w7-o4UXBqocFC-eGoh9qZOxBwXKTJ6V1fS2C9MF_DALlWj7X1ETM-Srp1jdmNE0LlBHdmP3wX1C_LEOHuVuZX34HMWsXh_EioYhQvnMrWGpAKevBhG29zWlEOrvupKycJKXq3iQufH1BrxeDEX5or_nai4oUsuwyOtZBIYAGEYVQgmAN6RP9CRQ0tRkJJBmcOwiJejEZS_"/>
+<div class="absolute -bottom-1 -right-1 bg-primary p-1 rounded-full shadow-lg">
+<span class="material-symbols-outlined text-[16px] text-on-primary">edit</span>
+</div>
+</div>
+<div class="flex-1">
+<h2 class="font-headline font-bold text-2xl text-on-surface">Alex Rivera</h2>
+<p class="text-on-surface-variant font-body text-sm">alex@zenith.ai</p>
+</div>
+</div>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary p-6 rounded-xl flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl">person_edit</span>
+<span class="font-label text-xs font-bold tracking-widest uppercase">Edit Profile</span>
+</button>
+</section>
+<!-- Preferences & Notifications (Tonal Contrast) -->
+<section class="space-y-4">
+<h3 class="font-label text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant px-2">Core Preferences</h3>
+<div class="bg-surface-container-low rounded-xl overflow-hidden">
+<!-- Toggle Item -->
+<div class="flex items-center justify-between p-5 hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">dark_mode</span>
+<div>
+<p class="font-body font-medium text-on-surface">Dark Mode</p>
+<p class="font-body text-xs text-on-surface-variant">Optimized for deep focus</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative flex items-center px-1">
+<div class="w-4 h-4 bg-white rounded-full translate-x-6"></div>
+</div>
+</div>
+<!-- Toggle Item -->
+<div class="flex items-center justify-between p-5 hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant">vibration</span>
+<div>
+<p class="font-body font-medium text-on-surface">Haptic Feedback</p>
+<p class="font-body text-xs text-on-surface-variant">Tactile interface responses</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-surface-bright rounded-full relative flex items-center px-1">
+<div class="w-4 h-4 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification Grid -->
+<section class="space-y-4">
+<h3 class="font-label text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant px-2">Zenith Reflections</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="p-4 bg-surface-container rounded-xl border-l-2 border-primary">
+<span class="material-symbols-outlined text-primary mb-2">wb_twilight</span>
+<p class="font-headline font-bold text-on-surface">Morning</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">07:00 AM Active</p>
+</div>
+<div class="p-4 bg-surface-container rounded-xl">
+<span class="material-symbols-outlined text-on-surface-variant mb-2">light_mode</span>
+<p class="font-headline font-bold text-on-surface">Midday</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">12:30 PM Disabled</p>
+</div>
+<div class="p-4 bg-surface-container rounded-xl border-l-2 border-tertiary">
+<span class="material-symbols-outlined text-tertiary mb-2">nights_stay</span>
+<p class="font-headline font-bold text-on-surface">Evening</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">09:00 PM Active</p>
+</div>
+</div>
+</section>
+<!-- Data Management (Asymmetric Focus) -->
+<section class="space-y-4">
+<h3 class="font-label text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant px-2">Data &amp; Continuity</h3>
+<div class="flex flex-col md:flex-row gap-4">
+<div class="flex-1 bg-surface-container-low p-6 rounded-xl border border-outline-variant/15">
+<div class="flex items-start justify-between">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface">Cloud Archive</h4>
+<p class="font-body text-sm text-on-surface-variant mt-1">Last backup: 2 hours ago</p>
+</div>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<button class="mt-6 w-full py-3 bg-surface-bright rounded-lg font-label text-[10px] font-bold tracking-widest uppercase hover:bg-surface-container-highest transition-colors">
+                        Backup Now
+                    </button>
+</div>
+<div class="w-full md:w-48 bg-surface-container-low p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-primary mb-2">download</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface">Export Data</span>
+<p class="text-[10px] text-on-surface-variant mt-1">CSV/JSON Format</p>
+</div>
+</div>
+</section>
+<!-- Account Actions (Critical) -->
+<section class="pt-4 space-y-3">
+<button class="w-full flex items-center justify-between p-5 bg-surface-container-low rounded-xl group hover:bg-surface-container transition-all">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-white">lock_reset</span>
+<span class="font-body font-medium text-on-surface">Change Password</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-center gap-3 p-5 bg-error-container/10 border border-error-dim/20 rounded-xl group hover:bg-error-container/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-error">logout</span>
+<span class="font-body font-bold text-error uppercase tracking-widest text-sm">Sign Out of Zenith</span>
+</button>
+</section>
+<div class="text-center py-6">
+<p class="font-label text-[10px] text-on-surface-variant/40 tracking-[0.3em] uppercase">Zenith OS v2.4.0-stable</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-8 py-4 bg-[#0e0e0e]/90 backdrop-blur-2xl border-t border-[#484847]/15 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] z-50 pb-safe">
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all duration-300 active:scale-90 transition-transform cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all duration-300 active:scale-90 transition-transform cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined" data-icon="Moving">moving</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all duration-300 active:scale-90 transition-transform cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</a>
+<!-- Active Tab: Settings -->
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#94aaff] to-[#809bff] text-white rounded-2xl p-3 shadow-[0_0_15px_rgba(148,170,255,0.3)] active:scale-90 transition-transform cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+</nav>
+</body></html>

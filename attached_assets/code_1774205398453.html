@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CRM Pipeline | PGWOS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484847;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-high": "#20201f",
+                        "surface-bright": "#2c2c2c",
+                        "tertiary-dim": "#ec9e00",
+                        "inverse-on-surface": "#565555",
+                        "on-primary-container": "#001b61",
+                        "secondary-fixed-dim": "#4bee74",
+                        "on-primary-fixed": "#000000",
+                        "surface-container-lowest": "#000000",
+                        "error": "#ff6e84",
+                        "surface-container": "#1a1a1a",
+                        "outline-variant": "#484847",
+                        "on-surface": "#ffffff",
+                        "on-error": "#490013",
+                        "primary-fixed": "#809bff",
+                        "on-error-container": "#ffb2b9",
+                        "on-tertiary-fixed": "#331f00",
+                        "surface-tint": "#94aaff",
+                        "primary-container": "#809bff",
+                        "surface-container-low": "#131313",
+                        "background": "#0e0e0e",
+                        "surface-container-highest": "#262626",
+                        "on-secondary": "#005d22",
+                        "secondary-container": "#006e2a",
+                        "inverse-surface": "#fcf9f8",
+                        "outline": "#767575",
+                        "on-tertiary": "#5c3b00",
+                        "surface-dim": "#0e0e0e",
+                        "tertiary-fixed-dim": "#ec9e00",
+                        "tertiary": "#ffbd5c",
+                        "on-primary": "#00257b",
+                        "on-primary-fixed-variant": "#002376",
+                        "on-background": "#ffffff",
+                        "surface-variant": "#262626",
+                        "on-secondary-fixed": "#004819",
+                        "secondary-dim": "#4bee74",
+                        "on-secondary-container": "#e4ffe1",
+                        "primary": "#94aaff",
+                        "secondary-fixed": "#5cfd80",
+                        "tertiary-fixed": "#feaa00",
+                        "on-surface-variant": "#adaaaa",
+                        "on-secondary-fixed-variant": "#006827",
+                        "on-tertiary-fixed-variant": "#5b3b00",
+                        "error-dim": "#d73357",
+                        "primary-fixed-dim": "#6c8cff",
+                        "surface": "#0e0e0e",
+                        "secondary": "#5cfd80",
+                        "primary-dim": "#3367ff",
+                        "tertiary-container": "#feaa00",
+                        "on-tertiary-container": "#503300",
+                        "inverse-primary": "#004eea",
+                        "error-container": "#a70138"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="bg-[#0e0e0e] dark:bg-[#0e0e0e] flex justify-between items-center w-full px-6 h-16 docked full-width top-0 z-40 fixed">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container border border-outline-variant/15">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="Professional male portrait for user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHvgMVN80x20EjnhKgJL3_Pir2HHwBtMGoc_Jd2T0-iY0Q5skxF3iihWtqBxtEMnQaR2nzr70dNrR_LV8qLxlUL_ZvOP9F2iAti-VkAYeTgAPJqLgVlCPZhbMh4ibknwtazzoWVkWtz4ecjDglZdXeEb13olhhVWjRGPs9pBnPDKDnPo8CaKKcD1_awOmopCtfNmhzsGopl0DMDtiu0HUokSbvem9sZzFNyvKNZoVwYFWPwiM1vNLczzdbPw6l0CcwSJEJCaeIVpli"/>
+</div>
+<h1 class="font-['Manrope'] font-bold text-xl tracking-tight text-white">Pipeline</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="px-3 py-1 bg-surface-container rounded-full text-sm font-label font-bold text-[#94aaff]">
+                🔥 12
+            </div>
+<button class="material-symbols-outlined text-[#adaaaa] hover:bg-[#2c2c2c] transition-colors p-2 rounded-full">search</button>
+</div>
+</header>
+<main class="pt-20 pb-24 px-4 min-h-screen">
+<!-- Search & Filter Bar -->
+<div class="mb-8 max-w-5xl mx-auto">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant focus:ring-1 focus:ring-primary/20 transition-all font-body" placeholder="Search leads, companies, or status..." type="text"/>
+</div>
+</div>
+<!-- Kanban Board Area -->
+<div class="flex overflow-x-auto gap-6 pb-8 snap-x">
+<!-- Column: New -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                        New
+                    </h3>
+<span class="text-xs font-label bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">3</span>
+</div>
+<div class="space-y-4">
+<!-- Lead Card 1 -->
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5 hover:border-outline-variant/20 transition-all group active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Alex Rivera</h4>
+<p class="text-xs font-label text-on-surface-variant">Nexus Dynamics</p>
+</div>
+<span class="text-[10px] font-label font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">New</span>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+<span class="text-xs text-on-surface-variant">Next: Oct 24</span>
+</div>
+</div>
+<!-- Lead Card 2 -->
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5 hover:border-outline-variant/20 transition-all group active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Sarah Chen</h4>
+<p class="text-xs font-label text-on-surface-variant">Quantum Leap AI</p>
+</div>
+<span class="text-[10px] font-label font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">New</span>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+<span class="text-xs text-on-surface-variant">Next: Oct 25</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Contacted -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span>
+                        Contacted
+                    </h3>
+<span class="text-xs font-label bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">1</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5 hover:border-outline-variant/20 transition-all active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Marcus Thorne</h4>
+<p class="text-xs font-label text-on-surface-variant">Velocity Retail</p>
+</div>
+<span class="text-[10px] font-label font-bold uppercase tracking-wider bg-surface-tint/10 text-surface-tint px-2 py-1 rounded-full">Pending</span>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+<span class="text-xs text-on-surface-variant">Next: Oct 23</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Interested -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        Interested
+                    </h3>
+<span class="text-xs font-label bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">2</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5 hover:border-outline-variant/20 transition-all active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Elena Vance</h4>
+<p class="text-xs font-label text-on-surface-variant">Black Mesa Co</p>
+</div>
+<span class="text-[10px] font-label font-bold uppercase tracking-wider bg-secondary/10 text-secondary px-2 py-1 rounded-full">High Value</span>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-secondary">verified</span>
+<span class="text-xs text-on-surface-variant">Next: Oct 22</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Follow-up -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                        Follow-up
+                    </h3>
+<span class="text-xs font-label bg-error/20 px-2 py-0.5 rounded-full text-error">2 DUE</span>
+</div>
+<div class="space-y-4">
+<!-- Urgent Follow up -->
+<div class="bg-surface-container-low p-5 rounded-xl border-l-4 border-tertiary shadow-lg active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Jordan Belfort</h4>
+<p class="text-xs font-label text-on-surface-variant">Stratton Oakmont</p>
+</div>
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-tertiary">notification_important</span>
+<span class="text-xs font-bold text-tertiary">Next: TODAY</span>
+</div>
+</div>
+<!-- Overdue Follow up -->
+<div class="bg-surface-container-low p-5 rounded-xl border-l-4 border-error/50 active:scale-95 duration-200">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Victor Vance</h4>
+<p class="text-xs font-label text-on-surface-variant">Empire Holdings</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-error">error</span>
+<span class="text-xs font-bold text-error">Overdue: 2 Days</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Closed -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+                        Closed
+                    </h3>
+<span class="text-xs font-label bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">12</span>
+</div>
+<div class="opacity-60 space-y-4">
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Bruce Wayne</h4>
+<p class="text-xs font-label text-on-surface-variant">Wayne Enterprises</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-secondary">task_alt</span>
+<span class="text-xs text-secondary">Won Oct 20</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Lost -->
+<div class="min-w-[300px] flex-shrink-0 snap-start">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="font-headline font-extrabold text-sm uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+                        Lost
+                    </h3>
+<span class="text-xs font-label bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant">4</span>
+</div>
+<div class="opacity-40 grayscale space-y-4">
+<div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-headline font-bold text-lg text-on-surface leading-tight">Lex Luthor</h4>
+<p class="text-xs font-label text-on-surface-variant">LexCorp</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-4 pt-4 border-t border-outline-variant/5">
+<span class="material-symbols-outlined text-sm text-error">cancel</span>
+<span class="text-xs text-error">Lost Oct 15</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB: Add Lead -->
+<button class="fixed bottom-24 right-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-[#94aaff] to-[#809bff] text-white flex items-center justify-center shadow-[0_8px_32px_rgba(148,170,255,0.3)] z-40 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#131313]/80 backdrop-blur-xl dark:bg-[#131313]/80 rounded-t-[1.5rem] shadow-[0_-4px_20px_rgba(0,0,0,0.5)] border-t border-[#484847]/15">
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#94aaff] to-[#809bff] text-white rounded-2xl p-3 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">check_circle</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">replay</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#adaaaa] p-3 hover:text-white transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">analytics</span>
+</a>
+</nav>
+</body></html>

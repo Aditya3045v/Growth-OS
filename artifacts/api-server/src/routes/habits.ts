@@ -137,13 +137,15 @@ router.post("/habits/:id/log", async (req, res): Promise<void> => {
     }).returning();
   }
 
-  res.json(LogHabitResponse.parse(log));
+  const toLog = (l: any) => ({ ...l, date: new Date(l.date) });
+  res.json(LogHabitResponse.parse(log ? toLog(log) : log));
 });
 
 router.get("/habit-logs/today", async (_req, res): Promise<void> => {
   const today = new Date().toISOString().split("T")[0];
   const logs = await db.select().from(habitLogsTable).where(eq(habitLogsTable.date, today));
-  res.json(GetTodayHabitLogsResponse.parse(logs));
+  const toLog = (l: any) => ({ ...l, date: new Date(l.date) });
+  res.json(GetTodayHabitLogsResponse.parse(logs.map(toLog)));
 });
 
 router.get("/habit-logs/history", async (req, res): Promise<void> => {

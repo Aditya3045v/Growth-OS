@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Zenith OS - Schedule</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#ec9e00",
+              "on-primary-fixed": "#000000",
+              "on-primary": "#00257b",
+              "secondary": "#5cfd80",
+              "primary": "#94aaff",
+              "on-primary-container": "#001b61",
+              "on-surface": "#ffffff",
+              "surface-container-highest": "#262626",
+              "primary-container": "#809bff",
+              "surface-container-lowest": "#000000",
+              "surface-container-low": "#131313",
+              "outline-variant": "#484847",
+              "outline": "#767575",
+              "surface": "#0e0e0e",
+              "primary-fixed": "#809bff",
+              "on-secondary-fixed-variant": "#006827",
+              "on-error": "#490013",
+              "on-tertiary-container": "#503300",
+              "surface-tint": "#94aaff",
+              "secondary-fixed-dim": "#4bee74",
+              "on-secondary-container": "#e4ffe1",
+              "on-error-container": "#ffb2b9",
+              "inverse-surface": "#fcf9f8",
+              "error-container": "#a70138",
+              "tertiary-container": "#feaa00",
+              "surface-container": "#1a1a1a",
+              "on-secondary-fixed": "#004819",
+              "on-tertiary": "#5c3b00",
+              "on-surface-variant": "#adaaaa",
+              "tertiary": "#ffbd5c",
+              "primary-dim": "#3367ff",
+              "background": "#0e0e0e",
+              "inverse-primary": "#004eea",
+              "surface-variant": "#262626",
+              "on-tertiary-fixed": "#331f00",
+              "on-background": "#ffffff",
+              "inverse-on-surface": "#565555",
+              "surface-bright": "#2c2c2c",
+              "secondary-fixed": "#5cfd80",
+              "tertiary-fixed": "#feaa00",
+              "on-tertiary-fixed-variant": "#5b3b00",
+              "secondary-container": "#006e2a",
+              "primary-fixed-dim": "#6c8cff",
+              "on-primary-fixed-variant": "#002376",
+              "tertiary-dim": "#ec9e00",
+              "error-dim": "#d73357",
+              "surface-dim": "#0e0e0e",
+              "surface-container-high": "#20201f",
+              "error": "#ff6e84",
+              "secondary-dim": "#4bee74",
+              "on-secondary": "#005d22"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-none">
+<div class="flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="User profile avatar smiling young professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx8N3AApjKX5MGfRUsv-w5aNyBS5YSp5eNVrkFCWuWO0DVRXx0LyjhngPiVr7hgrkl0AbVgNrja8bKu0gFfVMFvijiFGgVMjvTbbJelFCa0wqdMpoUjQ-goTqxooctgVUusy997utyFdWmDY2g_3ZmR12f7DU90ghQYHvw-1M4pbgHTE4tlALzkkaQaKidQ1n0TCTiT12E-SPrdGm1RxQWam90goazvjOnWjmmYrLte2ldq89PPWBx38ARt726nWvJPnDfzFHOMJJr"/>
+</div>
+<h1 class="font-headline font-bold text-white tracking-tight text-xl">Growth Calendar</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-zinc-500 hover:bg-zinc-800/50 p-2 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Header: Month & Year -->
+<div class="mb-10 flex items-end justify-between">
+<div>
+<p class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-1">Current Focus</p>
+<h2 class="font-headline font-extrabold text-4xl tracking-tighter">October 2023</h2>
+</div>
+<div class="hidden md:flex gap-2">
+<button class="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Horizontal Date Picker -->
+<section class="mb-12">
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-6 px-6">
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Mon</span>
+<span class="font-headline font-bold text-xl text-on-surface">16</span>
+</div>
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Tue</span>
+<span class="font-headline font-bold text-xl text-on-surface">17</span>
+</div>
+<!-- Active Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_0_30px_rgba(148,170,255,0.2)] active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2 text-on-primary-container/70">Wed</span>
+<span class="font-headline font-extrabold text-2xl">18</span>
+<div class="w-1.5 h-1.5 bg-on-primary-container rounded-full mt-2"></div>
+</div>
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Thu</span>
+<span class="font-headline font-bold text-xl text-on-surface">19</span>
+</div>
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Fri</span>
+<span class="font-headline font-bold text-xl text-on-surface">20</span>
+</div>
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Sat</span>
+<span class="font-headline font-bold text-xl text-on-surface">21</span>
+</div>
+<!-- Inactive Day -->
+<div class="flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl bg-surface-container-low border border-outline-variant/5 text-on-surface-variant transition-all hover:bg-surface-container active:scale-95">
+<span class="font-label text-[10px] uppercase tracking-widest mb-2">Sun</span>
+<span class="font-headline font-bold text-xl text-on-surface">22</span>
+</div>
+</div>
+</section>
+<!-- Daily Timeline -->
+<section class="relative">
+<div class="space-y-0 relative">
+<!-- Vertical Axis Line (Ghost) -->
+<div class="absolute left-16 top-0 bottom-0 w-[1px] bg-outline-variant/10"></div>
+<!-- Time Slot: 8 AM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">8 AM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 9 AM (Meeting) -->
+<div class="flex min-h-[100px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">9 AM</span>
+</div>
+<div class="flex-1 pb-8 relative border-b border-outline-variant/5">
+<div class="absolute inset-x-4 top-0 bg-surface-container-high rounded-3xl p-5 border-l-4 border-primary group hover:bg-surface-bright transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline font-bold text-lg text-white">Morning Strategy Meeting</h3>
+<span class="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Meeting</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-xs font-medium">9:00 AM - 10:00 AM</span>
+</div>
+<div class="w-1 h-1 bg-outline-variant rounded-full"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">group</span>
+<span class="text-xs font-medium">Internal Core</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Time Slot: 10 AM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">10 AM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 11 AM (Follow-up) -->
+<div class="flex min-h-[100px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">11 AM</span>
+</div>
+<div class="flex-1 pb-8 relative border-b border-outline-variant/5">
+<div class="absolute inset-x-4 top-4 bg-surface-container-high rounded-2xl p-4 border-l-4 border-tertiary group hover:bg-surface-bright transition-all cursor-pointer">
+<div class="flex justify-between items-center">
+<div>
+<p class="font-label text-[9px] font-bold text-tertiary uppercase tracking-widest mb-1">Follow-up</p>
+<h3 class="font-headline font-bold text-base text-white">Lead Follow-up: Sarah Chen</h3>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">call</span>
+<span class="text-[11px] font-medium tracking-tight">11:30 AM - 12:00 PM</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Time Slot: 12 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">12 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 1 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">1 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 2 PM (Deep Work) -->
+<div class="flex min-h-[180px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">2 PM</span>
+</div>
+<div class="flex-1 pb-8 relative border-b border-outline-variant/5">
+<div class="absolute inset-x-4 top-0 bg-surface-container-high rounded-3xl p-6 border-l-4 border-secondary group hover:bg-surface-bright transition-all cursor-pointer h-32">
+<div class="flex justify-between items-start">
+<div class="max-w-[70%]">
+<span class="bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3 inline-block">Task</span>
+<h3 class="font-headline font-bold text-xl text-white">Deep Work: CRM Cleanup</h3>
+<p class="text-xs text-on-surface-variant mt-2 font-medium">Audit pipeline stages and remove duplicates.</p>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="material-symbols-outlined text-secondary text-3xl opacity-50">auto_fix_high</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-2">2:00 - 4:00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Time Slot: 3 PM (Continued) -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">3 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 4 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">4 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 5 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">5 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 6 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">6 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 7 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">7 PM</span>
+</div>
+<div class="flex-1 pb-8 border-b border-outline-variant/5"></div>
+</div>
+<!-- Time Slot: 8 PM -->
+<div class="flex min-h-[80px]">
+<div class="w-16 pt-1">
+<span class="font-label text-[10px] font-bold text-on-surface-variant uppercase">8 PM</span>
+</div>
+<div class="flex-1 pb-8"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-6 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-2xl flex items-center justify-center z-50 transition-transform active:scale-90 shadow-[0_0_25px_rgba(148,170,255,0.4)]">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 bg-[#0e0e0e]/90 backdrop-blur-2xl border-t border-zinc-800/20 z-50 pb-safe">
+<!-- Schedule (Active) -->
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl p-2.5 scale-110 shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all" href="#">
+<span class="material-symbols-outlined mb-0.5" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-inter text-[8px] font-bold uppercase tracking-[0.1em]">Schedule</span>
+</a>
+<!-- Tasks -->
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 p-2 hover:text-blue-300 transition-all active:scale-90 cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined mb-1">checklist</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-[0.1em]">Tasks</span>
+</a>
+<!-- Insights -->
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 p-2 hover:text-blue-300 transition-all active:scale-90 cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined mb-1">analytics</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-[0.1em]">Insights</span>
+</a>
+<!-- Vault -->
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 p-2 hover:text-blue-300 transition-all active:scale-90 cubic-bezier(0.2,0,0,1)" href="#">
+<span class="material-symbols-outlined mb-1">shelves</span>
+<span class="font-inter text-[10px] font-semibold uppercase tracking-[0.1em]">Vault</span>
+</a>
+</nav>
+</body></html>

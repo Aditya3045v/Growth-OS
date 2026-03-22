@@ -1,132 +1,225 @@
 import { useState } from "react";
-import { useListNotes, useCreateNote } from "@workspace/api-client-react";
+import { useListNotes, useCreateNote, useUpdateNote, useDeleteNote } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Search, Hash } from "lucide-react";
 
 export default function Notes() {
   const [search, setSearch] = useState("");
-  const { data: notes, isLoading } = useListNotes(search ? { search } : undefined);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const { data: notes } = useListNotes(search ? { search } : undefined);
+  const [showForm, setShowForm] = useState(false);
+  const [editNote, setEditNote] = useState<any>(null);
+  const queryClient = useQueryClient();
+  const deleteNote = useDeleteNote();
 
-  if (isLoading) {
-    return <div className="flex h-[50vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
+  const allTags = Array.from(new Set(notes?.flatMap((n) => n.tags || []) || []));
+  const filtered = activeTag ? notes?.filter((n) => n.tags?.includes(activeTag)) : notes;
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/notes"] });
+
+  const remove = (id: number) => {
+    if (confirm("Delete this note?")) {
+      deleteNote.mutate({ id }, { onSuccess: invalidate });
+    }
+  };
 
   return (
-    <div className="space-y-8 pb-20">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Learning Log</h1>
-          <p className="text-muted-foreground mt-1">Capture ideas, reflections, and knowledge.</p>
-        </div>
-        
-        <div className="flex w-full sm:w-auto items-center gap-3">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search notes..." 
-              className="pl-9 bg-card border-border/50 rounded-xl"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <AddNoteModal />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {notes?.map(note => (
-          <Card key={note.id} className="p-6 bg-card border-border/50 hover:border-primary/30 hover:shadow-lg transition-all rounded-2xl flex flex-col h-64 group">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-bold text-lg line-clamp-1">{note.title}</h3>
-              <span className="text-xs text-muted-foreground shrink-0">{format(new Date(note.createdAt), "MMM d")}</span>
+    <div className="py-6 space-y-6">
+      {/* Header */}
+      <section>
+        <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#94aaff] font-semibold mb-1">Knowledge Vault</p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <h2 className="font-['Manrope'] font-extrabold text-4xl tracking-tight">Learning Log</h2>
+          <div className="flex gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#adaaaa] text-[18px]">search</span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-[#262626] border-none rounded-2xl py-3.5 pl-11 pr-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] text-sm"
+                placeholder="Filter through logs..."
+              />
             </div>
-            <p className="text-sm text-muted-foreground flex-1 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical' }}>
-              {note.content}
-            </p>
-            {note.tags && note.tags.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border/50 flex gap-2 flex-wrap">
-                {note.tags.map((tag: string) => (
-                  <span key={tag} className="flex items-center text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
-                    <Hash className="h-3 w-3 mr-0.5" />{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </Card>
-        ))}
-        {notes?.length === 0 && (
-          <div className="col-span-full text-center py-20 border-2 border-dashed border-border rounded-2xl bg-secondary/20">
-            <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium text-foreground">No notes found</p>
-            <p className="text-muted-foreground">Start capturing your thoughts today.</p>
+            <button
+              onClick={() => { setEditNote(null); setShowForm(true); }}
+              className="flex items-center gap-2 px-5 py-3.5 ds-liquid-gradient rounded-2xl font-['Manrope'] font-bold text-[#000] ds-inner-glow active:scale-[0.98] transition-transform shrink-0 text-sm whitespace-nowrap"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_notes</span>
+              Create New Note
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* Tag Filters */}
+      {allTags.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setActiveTag(null)}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              activeTag === null ? "bg-[#94aaff] text-[#000]" : "bg-[#1a1a1a] text-[#adaaaa] hover:text-white ds-ghost-border"
+            }`}
+          >
+            All
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                activeTag === tag ? "bg-[#94aaff] text-[#000]" : "bg-[rgba(148,170,255,0.1)] text-[#94aaff] hover:bg-[rgba(148,170,255,0.15)]"
+              }`}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Note form */}
+      {showForm && (
+        <NoteForm
+          initial={editNote}
+          onClose={() => { setShowForm(false); setEditNote(null); }}
+          onSaved={invalidate}
+        />
+      )}
+
+      {/* Recent Reflections */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-['Manrope'] font-bold text-lg">Recent Reflections</h3>
+          <span className="text-[#adaaaa] text-sm">{filtered?.length || 0} notes</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          {filtered?.length === 0 && (
+            <div className="md:col-span-12 text-center py-20 bg-[#131313] rounded-2xl ds-ghost-border">
+              <span className="material-symbols-outlined text-5xl text-[#484847]">auto_stories</span>
+              <p className="text-[#adaaaa] mt-3 font-medium">No notes yet. Start capturing your thoughts!</p>
+            </div>
+          )}
+
+          {filtered?.map((note, idx) => {
+            const isLarge = idx === 0;
+            return (
+              <article
+                key={note.id}
+                className={`${isLarge && filtered.length > 1 ? "md:col-span-8" : "md:col-span-4"} bg-[#131313] rounded-2xl p-6 ds-ghost-border flex flex-col justify-between min-h-[200px] relative overflow-hidden group hover:border-[rgba(148,170,255,0.2)] transition-all cursor-pointer`}
+                onClick={() => { setEditNote(note); setShowForm(true); }}
+              >
+                {/* Tags */}
+                {note.tags && note.tags.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-4">
+                    {note.tags.map((tag: string) => (
+                      <span key={tag} className="px-2 py-0.5 bg-[rgba(148,170,255,0.1)] text-[#94aaff] rounded-full text-[10px] font-bold uppercase tracking-wider">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex-1">
+                  <h4 className={`font-['Manrope'] font-bold leading-tight mb-2 ${isLarge ? "text-2xl" : "text-lg"}`}>
+                    {note.title}
+                  </h4>
+                  <p className="text-[#adaaaa] text-sm leading-relaxed line-clamp-4">{note.content}</p>
+                </div>
+
+                <div className="flex items-center justify-between mt-5 pt-5 border-t border-[rgba(72,72,71,0.1)]">
+                  <span className="text-[11px] text-[#adaaaa]/60 font-['Inter'] uppercase tracking-widest">
+                    {format(new Date(note.createdAt), "MMM d, yyyy")}
+                  </span>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditNote(note); setShowForm(true); }}
+                      className="p-1.5 rounded-lg text-[#94aaff] hover:bg-[rgba(148,170,255,0.1)] transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">edit</span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); remove(note.id); }}
+                      className="p-1.5 rounded-lg text-[#ff6e84] hover:bg-[rgba(255,110,132,0.1)] transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }
 
-function BookOpen(props: any) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
-}
-
-function AddNoteModal() {
-  const [open, setOpen] = useState(false);
+function NoteForm({ initial, onClose, onSaved }: {
+  initial: any; onClose: () => void; onSaved: () => void;
+}) {
   const createNote = useCreateNote();
-  const queryClient = useQueryClient();
+  const updateNote = useUpdateNote();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const tagsRaw = fd.get("tags") as string;
-    const tags = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
-    
-    createNote.mutate({
-      data: {
-        title: fd.get("title") as string,
-        content: fd.get("content") as string,
-        tags,
-      }
-    }, {
-      onSuccess: () => {
-        setOpen(false);
-        queryClient.invalidateQueries({ queryKey: ["/api/notes"] });
-      }
-    });
+    const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
+    const data = {
+      title: fd.get("title") as string,
+      content: fd.get("content") as string,
+      tags,
+    };
+    const opts = { onSuccess: () => { onSaved(); onClose(); } };
+    if (initial) {
+      updateNote.mutate({ id: initial.id, data }, opts);
+    } else {
+      createNote.mutate({ data }, opts);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="rounded-xl shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-accent hover:opacity-90 px-5">
-          <Plus className="h-4 w-4 mr-2" /> New Note
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-card border-border/50 sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Write a Note</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <Input name="title" placeholder="Note Title" required className="bg-background text-lg font-bold h-12" />
-          <Textarea 
-            name="content" 
-            placeholder="Write your thoughts here..." 
-            required 
-            className="bg-background min-h-[200px] resize-y" 
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#000]/75 backdrop-blur-sm p-4">
+      <div className="bg-[#131313] w-full max-w-2xl rounded-3xl p-6 space-y-5 ds-ghost-border max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <h3 className="font-['Manrope'] font-bold text-xl">{initial ? "Edit Note" : "Write a Note"}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full text-[#adaaaa] hover:bg-[#2c2c2c]">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="title"
+            required
+            defaultValue={initial?.title || ""}
+            autoFocus
+            className="w-full bg-[#262626] border-none rounded-xl py-4 px-5 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold text-lg"
+            placeholder="Note Title"
           />
-          <Input name="tags" placeholder="Tags (comma separated, e.g. marketing, ideas)" className="bg-background" />
-          
-          <Button type="submit" className="w-full mt-4 h-11" disabled={createNote.isPending}>
-            {createNote.isPending ? "Saving..." : "Save Note"}
-          </Button>
+          <textarea
+            name="content"
+            required
+            defaultValue={initial?.content || ""}
+            className="w-full bg-[#262626] border-none rounded-xl py-4 px-5 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] resize-none leading-relaxed text-sm"
+            placeholder="Write your thoughts here..."
+            rows={8}
+          />
+          <input
+            name="tags"
+            defaultValue={initial?.tags?.join(", ") || ""}
+            className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-5 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] text-sm"
+            placeholder="Tags (comma separated, e.g. strategy, ideas)"
+          />
+          <button
+            type="submit"
+            disabled={createNote.isPending || updateNote.isPending}
+            className="w-full ds-liquid-gradient py-4 rounded-2xl font-['Manrope'] font-extrabold text-[#000] ds-inner-glow active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            {createNote.isPending || updateNote.isPending ? "Saving..." : initial ? "Update Note" : "Save Note"}
+          </button>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

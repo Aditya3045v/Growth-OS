@@ -1,8 +1,37 @@
-# Workspace
+# PGWOS — Personal Growth & Work Operating System
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+A full-stack personal productivity PWA (dark-mode-first) with "Digital Sanctuary" design system.
+Built as a pnpm workspace monorepo using TypeScript.
+
+## Apps & Features
+- **Dashboard**: Bento grid with streak, stats, charts, habit ring
+- **Habits Tracker**: Categorized habit sections with timer/number/notes/checkbox inputs
+- **Task Manager**: Priority tasks with edit/delete, date/time, due dates
+- **CRM Leads Kanban**: Drag-and-drop pipeline board with full CRUD
+- **Calendar**: Horizontal week picker + timeline view with CRUD events
+- **Notes / Learning Log**: Bento grid masonry layout with tag filters
+- **Analytics**: Area/bar/pie charts with 7/14/30/90-day view selector
+- **Settings**: Profile, morning/evening reminders, push notifications
+- **Daily Check-in Modal**: Mood emoji grid, energy/focus sliders, auto-shows daily
+
+## Design System — Digital Sanctuary
+- Background: `#0e0e0e`
+- Surface container: `#131313` / `#1a1a1a` / `#2c2c2c`
+- Primary: `#94aaff` (periwinkle blue)
+- Secondary: `#5cfd80` (bright green)
+- Tertiary: `#ffbd5c` (amber)
+- Fonts: Manrope (headings) + Inter (body)
+- Icons: Material Symbols Outlined
+- Bottom navigation with gradient pill active state
+
+## Push Notifications
+- VAPID keys configured in `artifacts/api-server/.env`
+- Service worker at `artifacts/pgwos/public/sw.js`
+- Notification hook: `artifacts/pgwos/src/hooks/usePushNotifications.ts`
+- API routes: `artifacts/api-server/src/routes/notifications.ts`
+- Morning + evening reminders configurable in Settings
 
 ## Stack
 

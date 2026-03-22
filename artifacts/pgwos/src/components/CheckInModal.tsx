@@ -1,132 +1,188 @@
 import { useState, useEffect } from "react";
 import { useGetTodayCheckin, useCreateCheckin } from "@workspace/api-client-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Smile, Meh, Frown, Sparkles, Zap } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+
+const MOODS = [
+  { value: 1, emoji: "😩", label: "Rough" },
+  { value: 2, emoji: "😕", label: "Meh" },
+  { value: 3, emoji: "😐", label: "Okay" },
+  { value: 4, emoji: "😊", label: "Good" },
+  { value: 5, emoji: "🤩", label: "Great!" },
+];
 
 export function CheckInModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { data, isLoading } = useGetTodayCheckin();
+  const { data: todayCheckin } = useGetTodayCheckin();
   const createCheckin = useCreateCheckin();
   const queryClient = useQueryClient();
-
-  const [mood, setMood] = useState<string>("happy");
-  const [energyLevel, setEnergyLevel] = useState(7);
-  const [focusLevel, setFocusLevel] = useState(7);
+  const [open, setOpen] = useState(false);
+  const [mood, setMood] = useState<number>(3);
+  const [energy, setEnergy] = useState<number>(3);
+  const [focus, setFocus] = useState<number>(3);
   const [notes, setNotes] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
+  // Show modal once per day if not checked in
   useEffect(() => {
-    if (!isLoading && data && !data.checkin) {
-      setIsOpen(true);
+    const shown = sessionStorage.getItem("checkin-shown");
+    if (!shown && !todayCheckin?.checkin) {
+      const timer = setTimeout(() => {
+        setOpen(true);
+        sessionStorage.setItem("checkin-shown", "1");
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [data, isLoading]);
+  }, [todayCheckin]);
 
-  const handleSubmit = () => {
-    createCheckin.mutate(
-      {
-        data: {
-          mood,
-          energyLevel,
-          focusLevel,
-          notes: notes || null,
-        }
-      },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-          queryClient.invalidateQueries({ queryKey: ["/api/checkins/today"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/stats/dashboard"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/stats/streak"] });
-        }
+  const moodToStr = (m: number) => m <= 2 ? "low" : m === 3 ? "neutral" : "happy";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createCheckin.mutate({
+      data: {
+        mood: moodToStr(mood),
+        energyLevel: energy,
+        focusLevel: focus,
+        notes: notes.trim() || null,
       }
-    );
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/checkins/today"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/stats/dashboard"] });
+        setSubmitted(true);
+        setTimeout(() => setOpen(false), 1500);
+      }
+    });
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && false}> {/* Prevent manual close */}
-      <DialogContent className="sm:max-w-[500px] border-border/50 bg-card shadow-2xl shadow-primary/10">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-display">Daily Check-in</DialogTitle>
-          <DialogDescription>
-            Take a moment to reflect before starting your day. This maintains your streak!
-          </DialogDescription>
-        </DialogHeader>
+  if (!open) return null;
 
-        <div className="grid gap-6 py-4">
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">How are you feeling?</Label>
-            <div className="flex gap-3">
-              {[
-                { value: "happy", icon: Smile, label: "Great" },
-                { value: "neutral", icon: Meh, label: "Okay" },
-                { value: "low", icon: Frown, label: "Low" }
-              ].map(m => (
-                <button
-                  key={m.value}
-                  onClick={() => setMood(m.value)}
-                  className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${
-                    mood === m.value 
-                      ? "border-primary bg-primary/10 text-primary" 
-                      : "border-border hover:border-primary/50 text-muted-foreground hover:bg-accent/5"
-                  }`}
-                >
-                  <m.icon className="h-8 w-8" />
-                  <span className="font-medium text-sm">{m.label}</span>
-                </button>
-              ))}
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-[#000]/80 backdrop-blur-md p-4">
+      <div className="bg-[#131313] w-full max-w-md rounded-3xl p-7 space-y-6 ds-ghost-border shadow-2xl">
+        {submitted ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="w-20 h-20 mx-auto flex items-center justify-center rounded-full bg-[rgba(92,253,128,0.1)] border border-[rgba(92,253,128,0.2)]">
+              <span className="material-symbols-outlined text-5xl text-[#5cfd80]">check_circle</span>
+            </div>
+            <div>
+              <h3 className="font-['Manrope'] font-bold text-2xl">Logged!</h3>
+              <p className="text-[#adaaaa] mt-1">Your daily check-in is complete.</p>
             </div>
           </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#94aaff] font-bold">Daily Ritual</p>
+                <h2 className="font-['Manrope'] font-extrabold text-2xl mt-1">Morning Check-In</h2>
+                <p className="text-[#adaaaa] text-sm mt-1">{format(new Date(), "EEEE, MMMM d")}</p>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-2 rounded-xl text-[#adaaaa] hover:bg-[#2c2c2c] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
 
-          <div className="space-y-3">
-            <Label className="flex justify-between text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              <span className="flex items-center gap-2"><Zap className="h-4 w-4" /> Energy Level</span>
-              <span className="text-primary">{energyLevel}/10</span>
-            </Label>
-            <input 
-              type="range" 
-              min="1" max="10" 
-              value={energyLevel} 
-              onChange={(e) => setEnergyLevel(parseInt(e.target.value))}
-              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Mood Grid */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">How are you feeling?</label>
+                <div className="flex justify-between gap-2">
+                  {MOODS.map((m) => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setMood(m.value)}
+                      className={`flex-1 flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl transition-all active:scale-90 ${
+                        mood === m.value
+                          ? "bg-[rgba(148,170,255,0.15)] border border-[rgba(148,170,255,0.3)] shadow-[0_0_20px_rgba(148,170,255,0.1)]"
+                          : "bg-[#1a1a1a] border border-[rgba(72,72,71,0.1)] hover:bg-[#2c2c2c]"
+                      }`}
+                    >
+                      <span className={`text-2xl transition-transform duration-200 ${mood === m.value ? "scale-125" : ""}`}>
+                        {m.emoji}
+                      </span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider ${mood === m.value ? "text-[#94aaff]" : "text-[#adaaaa]"}`}>
+                        {m.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="space-y-3">
-            <Label className="flex justify-between text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> Focus Level</span>
-              <span className="text-primary">{focusLevel}/10</span>
-            </Label>
-            <input 
-              type="range" 
-              min="1" max="10" 
-              value={focusLevel} 
-              onChange={(e) => setFocusLevel(parseInt(e.target.value))}
-              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-          </div>
+              {/* Energy Slider */}
+              <SliderField
+                label="Energy Level"
+                value={energy}
+                onChange={setEnergy}
+                min={1} max={5}
+                labels={["Low", "Mid", "High"]}
+                color="#ffbd5c"
+              />
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Intentions for today (Optional)</Label>
-            <Textarea 
-              placeholder="What's your main focus?"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="resize-none h-20 rounded-xl bg-background border-2 focus-visible:ring-primary/20"
-            />
-          </div>
-        </div>
+              {/* Focus Slider */}
+              <SliderField
+                label="Focus Level"
+                value={focus}
+                onChange={setFocus}
+                min={1} max={5}
+                labels={["Scattered", "Neutral", "Locked in"]}
+                color="#5cfd80"
+              />
 
-        <Button 
-          onClick={handleSubmit} 
-          disabled={createCheckin.isPending}
-          className="w-full h-12 text-lg rounded-xl bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/25"
-        >
-          {createCheckin.isPending ? "Starting Day..." : "Start My Day"}
-        </Button>
-      </DialogContent>
-    </Dialog>
+              {/* Notes */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">Today's intention</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff] resize-none text-sm leading-relaxed"
+                  placeholder="What's your main focus for today?"
+                  rows={3}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={createCheckin.isPending}
+                className="w-full ds-liquid-gradient py-4 rounded-2xl font-['Manrope'] font-extrabold text-[#000] text-base ds-inner-glow active:scale-[0.98] transition-transform shadow-[0_20px_40px_-10px_rgba(148,170,255,0.3)] disabled:opacity-50"
+              >
+                {createCheckin.isPending ? "Logging..." : "Log My Day →"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SliderField({ label, value, onChange, min, max, labels, color }: {
+  label: string; value: number; onChange: (v: number) => void;
+  min: number; max: number; labels: string[]; color: string;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <label className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold">{label}</label>
+        <span className="font-['Manrope'] font-bold text-base" style={{ color }}>{value}/{max}</span>
+      </div>
+      <input
+        type="range"
+        className="custom-range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value))}
+        style={{ accentColor: color }}
+      />
+      <div className="flex justify-between text-[9px] text-[#adaaaa] uppercase tracking-wider font-bold">
+        {labels.map((l) => <span key={l}>{l}</span>)}
+      </div>
+    </div>
   );
 }
