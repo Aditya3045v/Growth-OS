@@ -49,17 +49,17 @@ function setupSchedule(morningEnabled: boolean, morningTime: string, eveningEnab
   }
 }
 
-router.get("/api/vapid-public-key", (_req: Request, res: Response): void => {
+router.get("/vapid-public-key", (_req: Request, res: Response): void => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || "" });
 });
 
-router.post("/api/push/subscribe", (req: Request, res: Response): void => {
+router.post("/push/subscribe", (req: Request, res: Response): void => {
   const { subscription, morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
   if (!subscription) {
     res.status(400).json({ error: "No subscription" });
     return;
   }
-  pushSubscription = subscription;
+  pushSubscription = subscription as webpush.PushSubscription;
   setupSchedule(
     morningEnabled ?? false,
     morningTime ?? "07:00",
@@ -74,13 +74,13 @@ router.post("/api/push/subscribe", (req: Request, res: Response): void => {
   res.json({ ok: true });
 });
 
-router.post("/api/push/unsubscribe", (_req: Request, res: Response): void => {
+router.post("/push/unsubscribe", (_req: Request, res: Response): void => {
   pushSubscription = null;
   clearAllScheduled();
   res.json({ ok: true });
 });
 
-router.post("/api/push/test", (_req: Request, res: Response): void => {
+router.post("/push/test", (_req: Request, res: Response): void => {
   if (!pushSubscription) {
     res.status(400).json({ error: "No subscription" });
     return;
@@ -93,7 +93,7 @@ router.post("/api/push/test", (_req: Request, res: Response): void => {
   res.json({ ok: true });
 });
 
-router.post("/api/push/update-schedule", (req: Request, res: Response): void => {
+router.post("/push/update-schedule", (req: Request, res: Response): void => {
   const { morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
   setupSchedule(morningEnabled ?? false, morningTime ?? "07:00", eveningEnabled ?? false, eveningTime ?? "21:00");
   res.json({ ok: true });

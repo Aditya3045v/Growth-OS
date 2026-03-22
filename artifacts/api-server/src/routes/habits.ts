@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db, habitsTable, habitLogsTable } from "@workspace/db";
+import type { HabitLog } from "@workspace/db";
 import {
   CreateHabitBody,
   UpdateHabitBody,
@@ -137,14 +138,14 @@ router.post("/habits/:id/log", async (req, res): Promise<void> => {
     }).returning();
   }
 
-  const toLog = (l: any) => ({ ...l, date: new Date(l.date) });
+  const toLog = (l: HabitLog) => ({ ...l, date: new Date(l.date) });
   res.json(LogHabitResponse.parse(log ? toLog(log) : log));
 });
 
 router.get("/habit-logs/today", async (_req, res): Promise<void> => {
   const today = new Date().toISOString().split("T")[0];
   const logs = await db.select().from(habitLogsTable).where(eq(habitLogsTable.date, today));
-  const toLog = (l: any) => ({ ...l, date: new Date(l.date) });
+  const toLog = (l: HabitLog) => ({ ...l, date: new Date(l.date) });
   res.json(GetTodayHabitLogsResponse.parse(logs.map(toLog)));
 });
 

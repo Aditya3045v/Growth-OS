@@ -127,33 +127,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Lead Pipeline */}
-      {analytics?.leadStatusCounts && analytics.leadStatusCounts.length > 0 && (
-        <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
-          <h3 className="font-['Manrope'] font-bold text-lg mb-4">Lead Pipeline</h3>
-          <div className="space-y-3">
-            {analytics.leadStatusCounts.map((entry, idx) => (
-              <div key={entry.status} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
-                  <span className="capitalize text-sm font-medium">{entry.status.replace("_", " ")}</span>
-                </div>
-                <span className="font-['Manrope'] font-bold text-xl" style={{ color: PIE_COLORS[idx % PIE_COLORS.length] }}>
-                  {String(entry.count).padStart(2, "0")}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 14-day Productivity Chart */}
+      {/* 14-day Habit & Task Bar Chart */}
       {chartData.length > 0 && (
         <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h3 className="font-['Manrope'] font-bold text-lg">Productivity Trends</h3>
-              <p className="text-[#adaaaa] text-sm">Performance over 14 days</p>
+              <h3 className="font-['Manrope'] font-bold text-lg">Daily Output</h3>
+              <p className="text-[#adaaaa] text-sm">Habits & tasks completed over 14 days</p>
             </div>
           </div>
           <div className="h-52">
@@ -167,6 +147,67 @@ export default function Dashboard() {
                 <Bar dataKey="tasksCompleted" name="Tasks" fill="#5cfd80" radius={[4, 4, 0, 0]} stackId="a" />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Productivity Score Line Chart */}
+      {chartData.length > 0 && (
+        <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
+          <div className="mb-6">
+            <h3 className="font-['Manrope'] font-bold text-lg">Productivity Score</h3>
+            <p className="text-[#adaaaa] text-sm">Score trend over 14 days</p>
+          </div>
+          <div className="h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <defs>
+                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#94aaff" />
+                    <stop offset="100%" stopColor="#ffbd5c" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(72,72,71,0.1)" vertical={false} />
+                <XAxis dataKey="date" stroke="#767575" fontSize={10} tickFormatter={(v) => v.substring(5, 10)} tickLine={false} axisLine={false} />
+                <YAxis stroke="#767575" fontSize={10} domain={[0, 100]} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "none", borderRadius: "8px", fontSize: "11px" }} />
+                <Line type="monotone" dataKey="productivityScore" name="Score" stroke="#ffbd5c" strokeWidth={2.5} dot={{ fill: "#ffbd5c", r: 3 }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Lead Pipeline Pie Chart */}
+      {analytics?.leadStatusCounts && analytics.leadStatusCounts.length > 0 && (
+        <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
+          <h3 className="font-['Manrope'] font-bold text-lg mb-4">Lead Pipeline</h3>
+          <div className="flex items-center gap-6">
+            <div className="h-40 w-40 shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={analytics.leadStatusCounts} dataKey="count" nameKey="status" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={4}>
+                    {analytics.leadStatusCounts.map((_entry, idx) => (
+                      <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "none", borderRadius: "8px", fontSize: "11px" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 space-y-2">
+              {analytics.leadStatusCounts.map((entry, idx) => (
+                <div key={entry.status} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
+                    <span className="capitalize text-sm font-medium text-[#adaaaa]">{entry.status.replace("_", " ")}</span>
+                  </div>
+                  <span className="font-['Manrope'] font-bold text-lg" style={{ color: PIE_COLORS[idx % PIE_COLORS.length] }}>
+                    {entry.count}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useListEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from "@workspace/api-client-react";
+import type { CalendarEvent } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  format, addMonths, subMonths, eachDayOfInterval, startOfMonth, endOfMonth,
-  isSameDay, isSameMonth, addDays, subDays, parseISO,
+  format, addMonths, subMonths, eachDayOfInterval,
+  startOfMonth, endOfMonth, startOfWeek, endOfWeek,
+  isSameDay, isSameMonth, addDays, subDays, addWeeks, subWeeks, parseISO,
 } from "date-fns";
 
+type ViewMode = "day" | "week" | "month";
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 7);
 
 export default function Calendar() {
@@ -14,13 +17,9 @@ export default function Calendar() {
   const deleteEvent = useDeleteEvent();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [showForm, setShowForm] = useState(false);
-  const [editEvent, setEditEvent] = useState<any>(null);
-
-  const weekStart = subDays(selectedDate, selectedDate.getDay());
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  const dayEvents = events?.filter((e) => isSameDay(parseISO(e.startDate), selectedDate)) || [];
+  const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/events"] });
 
@@ -30,63 +29,60 @@ export default function Calendar() {
     }
   };
 
+  const navigatePrev = () => {
+    if (viewMode === "month") setCurrentMonth((m) => subMonths(m, 1));
+    else if (viewMode === "week") setSelectedDate((d) => subWeeks(d, 1));
+    else setSelectedDate((d) => subDays(d, 1));
+  };
+  const navigateNext = () => {
+    if (viewMode === "month") setCurrentMonth((m) => addMonths(m, 1));
+    else if (viewMode === "week") setSelectedDate((d) => addWeeks(d, 1));
+    else setSelectedDate((d) => addDays(d, 1));
+  };
+
+  const headerLabel = () => {
+    if (viewMode === "month") return format(currentMonth, "MMMM yyyy");
+    if (viewMode === "week") {
+      const ws = startOfWeek(selectedDate);
+      const we = endOfWeek(selectedDate);
+      return `${format(ws, "MMM d")} – ${format(we, "MMM d, yyyy")}`;
+    }
+    return format(selectedDate, "EEEE, MMMM d, yyyy");
+  };
+
   return (
     <div className="py-6 space-y-6">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
           <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#adaaaa] font-bold mb-1">Current Focus</p>
-          <h2 className="font-['Manrope'] font-extrabold text-4xl tracking-tighter">
-            {format(currentMonth, "MMMM yyyy")}
+          <h2 className="font-['Manrope'] font-extrabold text-3xl tracking-tighter leading-tight">
+            {headerLabel()}
           </h2>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
-            className="p-2 rounded-xl bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] transition-colors ds-ghost-border active:scale-95"
-          >
+          <button onClick={navigatePrev} className="p-2 rounded-xl bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] transition-colors ds-ghost-border active:scale-95">
             <span className="material-symbols-outlined">chevron_left</span>
           </button>
-          <button
-            onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
-            className="p-2 rounded-xl bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] transition-colors ds-ghost-border active:scale-95"
-          >
+          <button onClick={navigateNext} className="p-2 rounded-xl bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] transition-colors ds-ghost-border active:scale-95">
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>
 
-      {/* Horizontal Week Scroller */}
-      <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
-        {weekDays.map((day) => {
-          const isSelected = isSameDay(day, selectedDate);
-          const isToday = isSameDay(day, new Date());
-          const hasEvents = events?.some((e) => isSameDay(parseISO(e.startDate), day));
-          return (
-            <button
-              key={day.toISOString()}
-              onClick={() => setSelectedDate(day)}
-              className={`shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl transition-all active:scale-95 ${
-                isSelected
-                  ? "bg-gradient-to-br from-[#94aaff] to-[#809bff] text-[#000] shadow-[0_0_30px_rgba(148,170,255,0.2)]"
-                  : "bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] ds-ghost-border"
-              }`}
-            >
-              <span className={`text-[10px] font-['Inter'] uppercase tracking-widest mb-1 ${isSelected ? "text-[rgba(0,0,0,0.7)]" : ""}`}>
-                {format(day, "EEE")}
-              </span>
-              <span className={`font-['Manrope'] font-extrabold text-xl ${isSelected ? "text-[#000]" : isToday ? "text-[#94aaff]" : "text-white"}`}>
-                {format(day, "d")}
-              </span>
-              {hasEvents && !isSelected && (
-                <div className="w-1.5 h-1.5 bg-[#94aaff] rounded-full mt-1" />
-              )}
-              {isSelected && hasEvents && (
-                <div className="w-1.5 h-1.5 bg-[rgba(0,0,0,0.5)] rounded-full mt-1" />
-              )}
-            </button>
-          );
-        })}
+      {/* View Mode Toggle */}
+      <div className="flex bg-[#1a1a1a] p-1 rounded-2xl gap-1 ds-ghost-border">
+        {(["day", "week", "month"] as ViewMode[]).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={`flex-1 py-2 rounded-xl text-[11px] font-['Inter'] font-bold uppercase tracking-wider transition-all ${
+              viewMode === mode ? "bg-[#94aaff] text-[#000] shadow-sm" : "text-[#adaaaa] hover:text-white"
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
       </div>
 
       {/* Add Event Button */}
@@ -108,24 +104,90 @@ export default function Calendar() {
         />
       )}
 
+      {/* Views */}
+      {viewMode === "day" && (
+        <DayView
+          selectedDate={selectedDate}
+          events={events || []}
+          onEdit={(ev) => { setEditEvent(ev); setShowForm(true); }}
+          onDelete={removeEvent}
+          onSelectDate={setSelectedDate}
+        />
+      )}
+      {viewMode === "week" && (
+        <WeekView
+          selectedDate={selectedDate}
+          events={events || []}
+          onSelectDate={(d) => { setSelectedDate(d); setViewMode("day"); }}
+        />
+      )}
+      {viewMode === "month" && (
+        <MonthView
+          currentMonth={currentMonth}
+          selectedDate={selectedDate}
+          events={events || []}
+          onSelectDate={(d) => { setSelectedDate(d); setViewMode("day"); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onEdit: (ev: CalendarEvent) => void;
+  onDelete: (id: number) => void;
+  onSelectDate: (d: Date) => void;
+}) {
+  const weekStart = subDays(selectedDate, selectedDate.getDay());
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const dayEvents = events.filter((e) => isSameDay(parseISO(e.startDate), selectedDate));
+
+  return (
+    <>
+      {/* Horizontal Week Scroller */}
+      <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
+        {weekDays.map((day) => {
+          const isSelected = isSameDay(day, selectedDate);
+          const isToday = isSameDay(day, new Date());
+          const hasEvents = events.some((e) => isSameDay(parseISO(e.startDate), day));
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => onSelectDate(day)}
+              className={`shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl transition-all active:scale-95 ${
+                isSelected
+                  ? "bg-gradient-to-br from-[#94aaff] to-[#809bff] text-[#000] shadow-[0_0_30px_rgba(148,170,255,0.2)]"
+                  : "bg-[#131313] text-[#adaaaa] hover:bg-[#1a1a1a] ds-ghost-border"
+              }`}
+            >
+              <span className={`text-[10px] font-['Inter'] uppercase tracking-widest mb-1 ${isSelected ? "text-[rgba(0,0,0,0.7)]" : ""}`}>
+                {format(day, "EEE")}
+              </span>
+              <span className={`font-['Manrope'] font-extrabold text-xl ${isSelected ? "text-[#000]" : isToday ? "text-[#94aaff]" : "text-white"}`}>
+                {format(day, "d")}
+              </span>
+              {hasEvents && !isSelected && <div className="w-1.5 h-1.5 bg-[#94aaff] rounded-full mt-1" />}
+              {isSelected && hasEvents && <div className="w-1.5 h-1.5 bg-[rgba(0,0,0,0.5)] rounded-full mt-1" />}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Timeline */}
       <div className="bg-[#131313] rounded-2xl ds-ghost-border overflow-hidden">
         <div className="px-6 py-4 border-b border-[rgba(72,72,71,0.1)]">
-          <h3 className="font-['Manrope'] font-bold text-base">
-            {format(selectedDate, "EEEE, MMMM d")}
-          </h3>
+          <h3 className="font-['Manrope'] font-bold text-base">{format(selectedDate, "EEEE, MMMM d")}</h3>
           <p className="text-[#adaaaa] text-sm">{dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}</p>
         </div>
-
         <div className="relative">
           <div className="absolute left-[72px] top-0 bottom-0 w-[1px] bg-[rgba(72,72,71,0.1)]" />
-
           {HOURS.map((hour) => {
             const hourEvents = dayEvents.filter((e) => {
               const h = parseInt(e.startDate.split("T")[1]?.split(":")[0] || "0");
               return h === hour;
             });
-
             return (
               <div key={hour} className="flex min-h-[72px]">
                 <div className="w-[72px] pt-2 px-4 shrink-0">
@@ -153,16 +215,10 @@ export default function Calendar() {
                         </span>
                       </div>
                       <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditEvent(event); setShowForm(true); }}
-                          className="text-[#94aaff] text-[10px] font-bold uppercase tracking-wider hover:underline"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} className="text-[#94aaff] text-[10px] font-bold uppercase tracking-wider hover:underline">
                           Edit
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); removeEvent(event.id); }}
-                          className="text-[#ff6e84] text-[10px] font-bold uppercase tracking-wider hover:underline"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} className="text-[#ff6e84] text-[10px] font-bold uppercase tracking-wider hover:underline">
                           Delete
                         </button>
                       </div>
@@ -174,12 +230,114 @@ export default function Calendar() {
           })}
         </div>
       </div>
+    </>
+  );
+}
+
+function WeekView({ selectedDate, events, onSelectDate }: {
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+}) {
+  const weekStart = startOfWeek(selectedDate);
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  return (
+    <div className="bg-[#131313] rounded-2xl ds-ghost-border overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-[rgba(72,72,71,0.1)]">
+        {weekDays.map((day) => (
+          <div key={day.toISOString()} className="p-3 text-center border-r last:border-0 border-[rgba(72,72,71,0.05)]">
+            <div className="text-[9px] font-['Inter'] uppercase tracking-widest text-[#adaaaa]">{format(day, "EEE")}</div>
+            <div className={`font-['Manrope'] font-extrabold text-lg mt-0.5 ${isSameDay(day, new Date()) ? "text-[#94aaff]" : "text-white"}`}>
+              {format(day, "d")}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 min-h-[300px]">
+        {weekDays.map((day) => {
+          const dayEvs = events.filter((e) => isSameDay(parseISO(e.startDate), day));
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => onSelectDate(day)}
+              className="p-2 border-r last:border-0 border-[rgba(72,72,71,0.05)] text-left hover:bg-[#1a1a1a] transition-colors align-top"
+            >
+              <div className="space-y-1">
+                {dayEvs.slice(0, 4).map((ev) => (
+                  <div key={ev.id} className="bg-[rgba(148,170,255,0.15)] text-[#94aaff] text-[9px] font-bold rounded px-1.5 py-0.5 truncate">
+                    {ev.title}
+                  </div>
+                ))}
+                {dayEvs.length > 4 && (
+                  <div className="text-[9px] text-[#adaaaa]">+{dayEvs.length - 4} more</div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MonthView({ currentMonth, selectedDate, events, onSelectDate }: {
+  currentMonth: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+}) {
+  const start = startOfWeek(startOfMonth(currentMonth));
+  const end = endOfWeek(endOfMonth(currentMonth));
+  const days = eachDayOfInterval({ start, end });
+  const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  return (
+    <div className="bg-[#131313] rounded-2xl ds-ghost-border overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-[rgba(72,72,71,0.1)]">
+        {WEEK_DAYS.map((d) => (
+          <div key={d} className="p-3 text-center text-[9px] font-['Inter'] uppercase tracking-widest text-[#adaaaa]">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {days.map((day) => {
+          const inMonth = isSameMonth(day, currentMonth);
+          const isSelected = isSameDay(day, selectedDate);
+          const isToday = isSameDay(day, new Date());
+          const dayEvs = events.filter((e) => isSameDay(parseISO(e.startDate), day));
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => onSelectDate(day)}
+              className={`relative min-h-[72px] p-2 border-b border-r border-[rgba(72,72,71,0.05)] last-of-type:border-r-0 text-left hover:bg-[#1a1a1a] transition-colors ${
+                !inMonth ? "opacity-30" : ""
+              } ${isSelected ? "bg-[rgba(148,170,255,0.08)]" : ""}`}
+            >
+              <span className={`text-xs font-['Manrope'] font-bold ${
+                isSelected ? "text-[#94aaff]" : isToday ? "text-[#5cfd80]" : inMonth ? "text-white" : "text-[#adaaaa]"
+              }`}>
+                {format(day, "d")}
+              </span>
+              <div className="mt-1 space-y-0.5">
+                {dayEvs.slice(0, 2).map((ev) => (
+                  <div key={ev.id} className="bg-[rgba(148,170,255,0.12)] text-[#94aaff] text-[8px] font-bold rounded px-1 py-0.5 truncate">
+                    {ev.title}
+                  </div>
+                ))}
+                {dayEvs.length > 2 && (
+                  <div className="text-[8px] text-[#adaaaa]">+{dayEvs.length - 2}</div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 function EventForm({ initial, defaultDate, onClose, onSaved }: {
-  initial: any; defaultDate: string; onClose: () => void; onSaved: () => void;
+  initial: CalendarEvent | null; defaultDate: string; onClose: () => void; onSaved: () => void;
 }) {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
@@ -256,17 +414,21 @@ function EventForm({ initial, defaultDate, onClose, onSaved }: {
           <option value="event">Event</option>
           <option value="meeting">Meeting</option>
           <option value="task">Task</option>
-          <option value="follow_up">Follow-up</option>
           <option value="reminder">Reminder</option>
         </select>
 
-        <button
-          type="submit"
-          disabled={createEvent.isPending || updateEvent.isPending}
-          className="w-full ds-liquid-gradient py-4 rounded-2xl font-['Manrope'] font-extrabold text-[#000] ds-inner-glow active:scale-[0.98] transition-transform disabled:opacity-50"
-        >
-          {createEvent.isPending || updateEvent.isPending ? "Saving..." : initial ? "Update Event" : "Create Event"}
-        </button>
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onClose}
+            className="flex-1 py-3 rounded-xl bg-[#262626] text-[#adaaaa] font-['Inter'] font-medium hover:bg-[#2c2c2c] transition-colors"
+          >
+            Cancel
+          </button>
+          <button type="submit"
+            className="flex-1 py-3 rounded-xl ds-liquid-gradient text-[#000] font-['Manrope'] font-bold ds-inner-glow active:scale-95 transition-transform"
+          >
+            {initial ? "Save Changes" : "Create Event"}
+          </button>
+        </div>
       </form>
     </div>
   );

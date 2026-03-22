@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useListHabits, useGetTodayHabitLogs, useLogHabit, useCreateHabit, useDeleteHabit } from "@workspace/api-client-react";
+import type { Habit, HabitLog } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -102,7 +103,7 @@ export default function Habits() {
 }
 
 function CategorySection({ category, icon, color, habits, logs }: {
-  category: string; icon: string; color: string; habits: any[]; logs: any[];
+  category: string; icon: string; color: string; habits: Habit[]; logs: HabitLog[];
 }) {
   const doneCount = habits.filter((h) => logs.find((l) => l.habitId === h.id)?.completed).length;
   return (
@@ -122,7 +123,7 @@ function CategorySection({ category, icon, color, habits, logs }: {
   );
 }
 
-function HabitItem({ habit, log, color }: { habit: any; log: any; color: string }) {
+function HabitItem({ habit, log, color }: { habit: Habit; log: HabitLog | undefined; color: string }) {
   const isCompleted = log?.completed;
   const logMutation = useLogHabit();
   const deleteHabit = useDeleteHabit();

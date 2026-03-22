@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGetAnalytics, useGetStreak } from "@workspace/api-client-react";
+import type { LeadStatusCount } from "@workspace/api-client-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -83,19 +84,18 @@ export default function Analytics() {
         </div>
       )}
 
-      {chartData.some((d: any) => d.avgMood) && (
+      {chartData.length > 0 && (
         <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
-          <h3 className="font-['Manrope'] font-bold text-base mb-1">Mood & Energy</h3>
-          <p className="text-[#adaaaa] text-sm mb-6">Daily check-in averages</p>
+          <h3 className="font-['Manrope'] font-bold text-base mb-1">Productivity Score</h3>
+          <p className="text-[#adaaaa] text-sm mb-6">Daily output score over {days} days</p>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} barSize={12}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(72,72,71,0.1)" vertical={false} />
                 <XAxis dataKey="date" stroke="#767575" fontSize={10} tickFormatter={(v) => v.substring(5)} tickLine={false} axisLine={false} />
-                <YAxis stroke="#767575" fontSize={10} domain={[0, 5]} tickLine={false} axisLine={false} />
+                <YAxis stroke="#767575" fontSize={10} domain={[0, 100]} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "none", borderRadius: "12px", fontSize: "11px" }} />
-                <Bar dataKey="avgMood" name="Mood" fill="#94aaff" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="avgEnergy" name="Energy" fill="#ffbd5c" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="productivityScore" name="Score" fill="#ffbd5c" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -110,7 +110,7 @@ export default function Analytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={leadData} dataKey="count" nameKey="status" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4}>
-                    {leadData.map((_: any, i: number) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                    {leadData.map((_: LeadStatusCount, i: number) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={{ backgroundColor: "#1a1a1a", border: "none", borderRadius: "12px", fontSize: "11px" }} />
                 </PieChart>
@@ -120,7 +120,7 @@ export default function Analytics() {
           <div className="bg-[#131313] p-6 rounded-2xl ds-ghost-border">
             <h3 className="font-['Manrope'] font-bold text-base mb-4">Pipeline Breakdown</h3>
             <div className="space-y-3">
-              {leadData.map((entry: any, idx: number) => (
+              {leadData.map((entry: LeadStatusCount, idx: number) => (
                 <div key={entry.status} className="flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }} />
                   <span className="flex-1 capitalize text-sm text-[#adaaaa] font-medium">{entry.status.replace("_", " ")}</span>

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, checkinsTable } from "@workspace/db";
+import type { Checkin } from "@workspace/db";
 import {
   CreateCheckinBody,
   ListCheckinsQueryParams,
@@ -10,7 +11,7 @@ import {
 
 const router: IRouter = Router();
 
-const toCheckin = (c: any) => ({ ...c, date: new Date(c.date), createdAt: new Date(c.createdAt) });
+const toCheckin = (c: Checkin) => ({ ...c, date: new Date(c.date), createdAt: new Date(c.createdAt) });
 
 router.get("/checkins/today", async (_req, res): Promise<void> => {
   const today = new Date().toISOString().split("T")[0];
