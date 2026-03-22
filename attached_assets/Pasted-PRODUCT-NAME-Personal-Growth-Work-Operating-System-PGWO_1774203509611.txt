@@ -1,0 +1,857 @@
+PRODUCT NAME:
+Personal Growth & Work Operating System (PGWOS)
+
+PRODUCT TYPE:
+Progressive Web Application (PWA)
+
+PRIMARY PURPOSE:
+A single system to track daily improvement habits, communication practice, work execution, sales pipeline, tasks, schedules, and performance metrics.
+
+The system must function as:
+
+* Habit tracker
+* Productivity dashboard
+* CRM (Lead management)
+* Personal development tracker
+* Task & schedule manager
+* Performance analytics engine
+
+---
+
+GLOBAL SYSTEM REQUIREMENTS
+
+Application must support:
+
+* User authentication
+* Persistent login session
+* Offline usage (PWA)
+* Push notifications
+* Mobile-first responsive design
+* Fast load time
+* Data persistence
+* Daily check-in workflow
+* Streak tracking
+* Real-time stats updates
+
+---
+
+CORE MODULES
+
+MODULE LIST:
+
+1. Dashboard
+2. Daily Improvement Tracker
+3. Leads / CRM System
+4. Task Manager
+5. Schedule / Calendar
+6. Notes & Learning Log
+7. Analytics & Performance
+8. Notifications Engine
+9. Settings
+10. Data Storage System
+
+---
+
+MODULE 1: DASHBOARD
+
+Purpose:
+Provide a visual overview of daily progress and key performance metrics.
+
+Layout:
+
+Top Section:
+
+Display:
+
+* Greeting message
+* Current date
+* Current time
+
+Stats Cards:
+
+* Current streak
+* Tasks completed today
+* Messages sent today
+* Calls made today
+* Leads added today
+* Follow-ups completed today
+* Habit completion rate
+* Daily productivity score
+
+Each stat must:
+
+* update in real-time
+* animate when changed
+* display percentage change from yesterday
+
+---
+
+Dashboard Widgets:
+
+Widget: Daily Progress
+
+Displays:
+
+* total tasks assigned today
+* tasks completed
+* completion percentage
+
+---
+
+Widget: Outreach Activity
+
+Displays:
+
+* messages sent
+* calls made
+* demos scheduled
+
+---
+
+Widget: Lead Pipeline
+
+Displays:
+
+* total leads
+* active leads
+* closed deals
+* lost leads
+
+---
+
+Widget: Habit Completion
+
+Displays:
+
+* number of habits completed today
+* completion percentage
+
+---
+
+Dashboard Charts:
+
+Chart 1:
+
+Type: Line chart
+
+Data:
+
+* tasks completed per day
+* habits completed per day
+
+Time range:
+
+* last 7 days
+* last 30 days
+
+---
+
+Chart 2:
+
+Type: Bar chart
+
+Data:
+
+* messages sent
+* calls made
+* demos completed
+
+---
+
+Chart 3:
+
+Type: Pie chart
+
+Data:
+
+* lead status distribution
+
+---
+
+MODULE 2: DAILY IMPROVEMENT TRACKER
+
+Purpose:
+Track personal development habits and communication practice.
+
+Default Daily Tasks:
+
+Task ID: 1
+
+Title:
+Speak out loud for 15 minutes
+
+Category:
+Communication
+
+Required Input:
+
+* checkbox
+* duration timer
+
+---
+
+Task ID: 2
+
+Title:
+Send outreach messages
+
+Category:
+Sales
+
+Required Input:
+
+* number of messages sent
+
+---
+
+Task ID: 3
+
+Title:
+Explain one concept to someone
+
+Category:
+Leadership
+
+Required Input:
+
+* checkbox
+* notes field
+
+---
+
+Task ID: 4
+
+Title:
+Read English out loud for 10 minutes
+
+Category:
+Communication
+
+Required Input:
+
+* timer
+
+---
+
+Task ID: 5
+
+Title:
+Start one conversation
+
+Category:
+Confidence
+
+Required Input:
+
+* checkbox
+
+---
+
+Task ID: 6
+
+Title:
+Record one progress video
+
+Category:
+Communication
+
+Required Input:
+
+* checkbox
+* optional video upload
+
+---
+
+Task ID: 7
+
+Title:
+Do one leadership action
+
+Category:
+Leadership
+
+Required Input:
+
+* description field
+
+---
+
+Task ID: 8
+
+Title:
+Review today's progress
+
+Category:
+Reflection
+
+Required Input:
+
+* notes field
+
+---
+
+Task ID: 9
+
+Title:
+Plan tomorrow's tasks
+
+Category:
+Planning
+
+Required Input:
+
+* task list input
+
+---
+
+Daily Completion Logic:
+
+If all required tasks completed:
+
+Increment streak by 1
+
+If not completed:
+
+Reset streak to 0
+
+---
+
+MODULE 3: LEADS / CRM SYSTEM
+
+Purpose:
+Track potential customers and manage sales pipeline.
+
+Lead Data Fields:
+
+Lead ID
+
+Name
+
+Business Name
+
+Phone Number
+
+Email
+
+City
+
+Industry
+
+Source
+
+Lead Status
+
+Allowed Values:
+
+New
+Contacted
+Interested
+Follow-up
+Closed
+Lost
+
+---
+
+Additional Fields:
+
+Next Follow-Up Date
+
+Last Contact Date
+
+Notes
+
+Call History
+
+Message History
+
+Deal Value
+
+---
+
+CRM Features:
+
+Create lead
+
+Edit lead
+
+Delete lead
+
+Search lead
+
+Filter leads
+
+Sort leads
+
+Update lead status
+
+Add notes
+
+Schedule follow-up
+
+Track calls
+
+Track messages
+
+---
+
+Pipeline View:
+
+Type:
+
+Kanban board
+
+Columns:
+
+New
+Contacted
+Interested
+Follow-up
+Closed
+Lost
+
+Drag-and-drop support required.
+
+---
+
+MODULE 4: TASK MANAGER
+
+Purpose:
+Manage work tasks and daily execution.
+
+Task Fields:
+
+Task ID
+
+Title
+
+Description
+
+Priority
+
+Allowed Values:
+
+Low
+Medium
+High
+
+Due Date
+
+Due Time
+
+Status
+
+Allowed Values:
+
+Pending
+In Progress
+Completed
+
+---
+
+Task Features:
+
+Create task
+
+Edit task
+
+Delete task
+
+Mark task complete
+
+Set reminder
+
+Set recurring task
+
+Track completion time
+
+---
+
+MODULE 5: SCHEDULE / CALENDAR
+
+Purpose:
+Visual planning and time management.
+
+Calendar Views:
+
+Daily view
+
+Weekly view
+
+Monthly view
+
+---
+
+Calendar Events:
+
+Task
+
+Meeting
+
+Follow-up
+
+Reminder
+
+---
+
+Event Fields:
+
+Event title
+
+Date
+
+Time
+
+Duration
+
+Description
+
+---
+
+MODULE 6: NOTES & LEARNING LOG
+
+Purpose:
+Capture ideas and reflections.
+
+Note Fields:
+
+Note ID
+
+Title
+
+Content
+
+Tags
+
+Created Date
+
+Updated Date
+
+---
+
+Note Features:
+
+Create note
+
+Edit note
+
+Delete note
+
+Search notes
+
+Filter notes
+
+---
+
+MODULE 7: ANALYTICS & PERFORMANCE
+
+Purpose:
+Measure improvement and performance trends.
+
+Metrics:
+
+Habit consistency
+
+Daily productivity score
+
+Lead conversion rate
+
+Outreach activity
+
+Task completion rate
+
+Streak history
+
+---
+
+Analytics Charts:
+
+Line chart:
+
+Productivity over time
+
+Bar chart:
+
+Daily outreach activity
+
+Pie chart:
+
+Lead status distribution
+
+---
+
+MODULE 8: NOTIFICATIONS ENGINE
+
+Purpose:
+Ensure daily discipline and reminders.
+
+Notification Types:
+
+Morning reminder
+
+Midday reminder
+
+Evening reminder
+
+Task reminder
+
+Follow-up reminder
+
+Check-in reminder
+
+---
+
+Notification Schedule:
+
+Morning:
+
+08:00
+
+Message:
+
+Start your day. Complete your habits.
+
+---
+
+Afternoon:
+
+14:00
+
+Message:
+
+Send outreach messages.
+
+---
+
+Evening:
+
+20:00
+
+Message:
+
+Review your progress.
+
+---
+
+MODULE 9: SETTINGS
+
+Purpose:
+User customization.
+
+Settings Options:
+
+Change name
+
+Change password
+
+Toggle dark mode
+
+Notification preferences
+
+Data export
+
+Data backup
+
+---
+
+MODULE 10: DATA STORAGE SYSTEM
+
+Purpose:
+Persist user data securely.
+
+Required Tables:
+
+Users
+
+Habits
+
+Tasks
+
+Leads
+
+Events
+
+Notes
+
+Checkins
+
+Stats
+
+---
+
+Required Data Relationships:
+
+User -> Habits
+
+User -> Tasks
+
+User -> Leads
+
+User -> Events
+
+User -> Notes
+
+User -> Checkins
+
+---
+
+CORE SYSTEM LOGIC
+
+Daily Check-In Required
+
+Fields:
+
+Mood
+
+Allowed Values:
+
+Happy
+Neutral
+Low
+
+Energy Level
+
+Range:
+
+1 to 10
+
+Focus Level
+
+Range:
+
+1 to 10
+
+Notes:
+
+Text input
+
+---
+
+STREAK SYSTEM
+
+Condition:
+
+If daily check-in completed:
+
+Increment streak
+
+If missed:
+
+Reset streak
+
+---
+
+PERFORMANCE SCORE CALCULATION
+
+Formula:
+
+Productivity Score =
+
+(Habits Completed
++
+Tasks Completed
++
+Follow-ups Completed)
+
+divided by
+
+Total Assigned Activities
+
+---
+
+USER EXPERIENCE REQUIREMENTS
+
+Animations:
+
+Page transitions
+
+Card hover effects
+
+Button clicks
+
+Chart updates
+
+Completion success animation
+
+---
+
+DESIGN REQUIREMENTS
+
+Style:
+
+Clean
+
+Modern
+
+Minimal
+
+Motivating
+
+---
+
+Theme:
+
+Dark mode default
+
+---
+
+Layout:
+
+Rounded corners
+
+Soft shadows
+
+Large readable fonts
+
+---
+
+PERFORMANCE REQUIREMENTS
+
+Load time:
+
+Under 2 seconds
+
+---
+
+Offline capability:
+
+Required
+
+---
+
+Push notifications:
+
+Required
+
+---
+
+Mobile responsiveness:
+
+Required
+
+---
+
+SECURITY REQUIREMENTS
+
+Secure authentication
+
+Encrypted data storage
+
+Protected API endpoints
+
+---
+
+FUTURE EXPANSION FEATURES
+
+Voice logging
+
+AI assistant
+
+Automatic habit suggestions
+
+Goal tracking
+
+Revenue forecasting
+
+---
+
+END OF SPECIFICATION
