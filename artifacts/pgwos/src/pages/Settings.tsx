@@ -10,6 +10,7 @@ export default function Settings() {
   const { isSupported, isSubscribed, isLoading: pushLoading, permission, subscribe, unsubscribe, sendTest, updateSchedule } = usePushNotifications();
 
   const [userName, setUserName] = useState("");
+  const [darkMode, setDarkMode] = useState(true);
   const [morningEnabled, setMorningEnabled] = useState(true);
   const [morningTime, setMorningTime] = useState("07:00");
   const [eveningEnabled, setEveningEnabled] = useState(true);
@@ -19,6 +20,7 @@ export default function Settings() {
   useEffect(() => {
     if (settings) {
       setUserName(settings.userName || "");
+      setDarkMode(settings.darkMode ?? true);
       setMorningEnabled(settings.morningReminderEnabled ?? true);
       setMorningTime(settings.morningReminderTime || "07:00");
       setEveningEnabled(settings.eveningReminderEnabled ?? true);
@@ -31,7 +33,7 @@ export default function Settings() {
     updateSettings.mutate({
       data: {
         userName,
-        darkMode: true,
+        darkMode,
         morningReminderEnabled: morningEnabled,
         morningReminderTime: morningTime,
         eveningReminderEnabled: eveningEnabled,
@@ -89,12 +91,15 @@ export default function Settings() {
 
           <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
             <div>
-              <p className="font-medium text-sm">Dark Mode</p>
-              <p className="text-[#adaaaa] text-xs mt-0.5">Always on — Digital Sanctuary</p>
+              <p className="font-medium text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#94aaff]">
+                  {darkMode ? "dark_mode" : "light_mode"}
+                </span>
+                {darkMode ? "Dark Mode" : "Light Mode"}
+              </p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">{darkMode ? "Digital Sanctuary — easy on the eyes" : "Bright mode active"}</p>
             </div>
-            <div className="w-12 h-7 rounded-full bg-[#94aaff] flex items-center justify-end px-1">
-              <div className="w-5 h-5 rounded-full bg-[#000]" />
-            </div>
+            <Toggle checked={darkMode} onChange={setDarkMode} color="#94aaff" />
           </div>
         </div>
 

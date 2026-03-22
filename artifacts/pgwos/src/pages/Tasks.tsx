@@ -221,7 +221,7 @@ function TaskForm({ initial, onClose, onSaved }: { initial: Task | null; onClose
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    const data = { title, priority, dueDate: dueDate || null, dueTime: dueTime || null };
+    const data = { title, priority, description: description || null, dueDate: dueDate || null, dueTime: dueTime || null };
     const opts = { onSuccess: () => { onSaved(); onClose(); } };
     if (initial) {
       updateTask.mutate({ id: initial.id, data }, opts);

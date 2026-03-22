@@ -1,0 +1,47 @@
+{
+  "name": "PGWOS — Personal Growth OS",
+  "short_name": "PGWOS",
+  "description": "Your Personal Growth & Work Operating System — habits, tasks, CRM, calendar, and notes in one dark-mode sanctuary.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0e0e0e",
+  "background_color": "#0e0e0e",
+  "lang": "en",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Home",
+      "url": "./",
+      "icons": [{ "src": "./favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Daily Habits",
+      "short_name": "Habits",
+      "url": "./habits",
+      "icons": [{ "src": "./favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Tasks",
+      "short_name": "Tasks",
+      "url": "./tasks",
+      "icons": [{ "src": "./favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Calendar",
+      "short_name": "Schedule",
+      "url": "./calendar",
+      "icons": [{ "src": "./favicon.svg", "sizes": "any" }]
+    }
+  ]
+}

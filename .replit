@@ -24,3 +24,9 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+VAPID_PUBLIC_KEY = "BCDIgrotSkuwwqS7rYnpCPMXpJlWJ0TzkyDBUNvd0pz5I05eCjtgLFUoTn3GBtSHgHm6FLExHEM-84gJfyuJknw"
+VAPID_PRIVATE_KEY = "S_M7rpG0NzLdJmPOr8YsCicuPUVQLX7b2033ivj5AZU"

@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 
 import { AppLayout } from "./components/layout/AppLayout";
 import { CheckInModal } from "./components/CheckInModal";
+import { useGetSettings } from "@workspace/api-client-react";
 
 import Dashboard from "./pages/Dashboard";
 import Habits from "./pages/Habits";
@@ -25,6 +26,23 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function ThemeController() {
+  const { data: settings } = useGetSettings();
+
+  useEffect(() => {
+    const isDark = settings?.darkMode ?? true;
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0e0e0e");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#f5f5f5");
+    }
+  }, [settings?.darkMode]);
+
+  return null;
+}
 
 function Router() {
   return (
@@ -47,14 +65,27 @@ function Router() {
 
 function App() {
   useEffect(() => {
-    // Force dark mode globally to match design spec
-    document.documentElement.classList.add('dark');
+    document.documentElement.classList.add("dark");
+
+    if ("serviceWorker" in navigator) {
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      const swUrl = `${base}/sw.js`;
+      navigator.serviceWorker
+        .register(swUrl, { scope: `${base}/` })
+        .then((reg) => {
+          console.log("[PGWOS] Service Worker registered, scope:", reg.scope);
+        })
+        .catch((err) => {
+          console.warn("[PGWOS] Service Worker registration failed:", err);
+        });
+    }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <ThemeController />
           <Router />
         </WouterRouter>
         <Toaster />

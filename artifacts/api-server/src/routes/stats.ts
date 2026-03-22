@@ -42,7 +42,7 @@ router.get("/stats/dashboard", async (_req, res): Promise<void> => {
   const totalActivities = tasksToday.length + habitsTotal;
   const completedActivities = tasksCompletedToday + habitsCompleted;
   const productivityScore = totalActivities > 0
-    ? Math.round((completedActivities / totalActivities) * 100) / 100
+    ? Math.round((completedActivities / totalActivities) * 100)
     : 0;
 
   const outreachHabit = habits.find((h) => h.title.toLowerCase().includes("outreach") || h.title.toLowerCase().includes("message"));
@@ -162,7 +162,7 @@ router.get("/stats/analytics", async (req, res): Promise<void> => {
     const totalActivities = habitCount + (tasks.filter((t) => t.dueDate === dateStr).length || 1);
     const completedActivities = habitsCompleted + tasksCompleted;
     const productivityScore = totalActivities > 0
-      ? Math.round((completedActivities / totalActivities) * 100) / 100
+      ? Math.round((completedActivities / totalActivities) * 100)
       : 0;
 
     dailySummaries.push({ date: dateStr, tasksCompleted, habitsCompleted, productivityScore });

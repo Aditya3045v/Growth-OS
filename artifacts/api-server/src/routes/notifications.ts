@@ -1,31 +1,73 @@
 import { Router, Request, Response } from "express";
 import webpush from "web-push";
+import fs from "fs";
+import path from "path";
 
 const router = Router();
 
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+const SUBSCRIPTION_FILE = path.join(process.cwd(), ".push-subscription.json");
 
 if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn("VAPID keys not configured — push notifications disabled.");
+  console.warn("[PGWOS] VAPID keys not configured — push notifications disabled.");
 } else {
   webpush.setVapidDetails("mailto:pgwos@app.local", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 }
 
-let pushSubscription: webpush.PushSubscription | null = null;
+interface StoredSubscription {
+  subscription: webpush.PushSubscription;
+  schedule: { morningEnabled: boolean; morningTime: string; eveningEnabled: boolean; eveningTime: string };
+}
+
+let stored: StoredSubscription | null = null;
+
+function loadSubscription(): void {
+  try {
+    if (fs.existsSync(SUBSCRIPTION_FILE)) {
+      const raw = fs.readFileSync(SUBSCRIPTION_FILE, "utf-8");
+      stored = JSON.parse(raw) as StoredSubscription;
+      console.log("[PGWOS] Loaded push subscription from disk.");
+      setupSchedule(stored.schedule.morningEnabled, stored.schedule.morningTime, stored.schedule.eveningEnabled, stored.schedule.eveningTime);
+    }
+  } catch (err) {
+    console.warn("[PGWOS] Failed to load push subscription:", err);
+    stored = null;
+  }
+}
+
+function saveSubscription(): void {
+  try {
+    if (stored) {
+      fs.writeFileSync(SUBSCRIPTION_FILE, JSON.stringify(stored), "utf-8");
+    } else if (fs.existsSync(SUBSCRIPTION_FILE)) {
+      fs.unlinkSync(SUBSCRIPTION_FILE);
+    }
+  } catch (err) {
+    console.warn("[PGWOS] Failed to save push subscription:", err);
+  }
+}
 
 const scheduledJobs: NodeJS.Timeout[] = [];
 
 function sendPush(payload: object): void {
-  if (!pushSubscription) return;
-  webpush.sendNotification(pushSubscription, JSON.stringify(payload)).catch(() => {});
+  if (!stored || !VAPID_PUBLIC_KEY) return;
+  webpush.sendNotification(stored.subscription, JSON.stringify(payload))
+    .catch((err: { statusCode?: number }) => {
+      if (err?.statusCode === 410 || err?.statusCode === 404) {
+        console.log("[PGWOS] Subscription expired, clearing.");
+        stored = null;
+        saveSubscription();
+        clearAllScheduled();
+      }
+    });
 }
 
 function scheduleNotification(hour: number, minute: number, title: string, body: string): void {
   const checkAndSend = () => {
     const now = new Date();
     if (now.getHours() === hour && now.getMinutes() === minute) {
-      sendPush({ title, body, tag: "pgwos-reminder" });
+      sendPush({ title, body, tag: "pgwos-reminder", icon: "/favicon.svg" });
     }
   };
   const interval = setInterval(checkAndSend, 60000);
@@ -49,52 +91,76 @@ function setupSchedule(morningEnabled: boolean, morningTime: string, eveningEnab
   }
 }
 
+loadSubscription();
+
 router.get("/vapid-public-key", (_req: Request, res: Response): void => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || "" });
 });
 
 router.post("/push/subscribe", (req: Request, res: Response): void => {
-  const { subscription, morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
-  if (!subscription) {
-    res.status(400).json({ error: "No subscription" });
+  const { subscription, morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body as {
+    subscription: webpush.PushSubscription;
+    morningEnabled?: boolean;
+    morningTime?: string;
+    eveningEnabled?: boolean;
+    eveningTime?: string;
+  };
+
+  if (!subscription?.endpoint) {
+    res.status(400).json({ error: "Invalid subscription object" });
     return;
   }
-  pushSubscription = subscription as webpush.PushSubscription;
-  setupSchedule(
-    morningEnabled ?? false,
-    morningTime ?? "07:00",
-    eveningEnabled ?? false,
-    eveningTime ?? "21:00"
-  );
+
+  const schedule = {
+    morningEnabled: morningEnabled ?? true,
+    morningTime: morningTime ?? "07:00",
+    eveningEnabled: eveningEnabled ?? true,
+    eveningTime: eveningTime ?? "21:00",
+  };
+
+  stored = { subscription, schedule };
+  saveSubscription();
+  setupSchedule(schedule.morningEnabled, schedule.morningTime, schedule.eveningEnabled, schedule.eveningTime);
+
   sendPush({
     title: "PGWOS Activated 🚀",
-    body: "Push notifications are now enabled. You'll be reminded to check in daily!",
-    tag: "pgwos-welcome"
+    body: "Push notifications are enabled. You'll be reminded to check in daily!",
+    tag: "pgwos-welcome",
   });
+
   res.json({ ok: true });
 });
 
 router.post("/push/unsubscribe", (_req: Request, res: Response): void => {
-  pushSubscription = null;
+  stored = null;
+  saveSubscription();
   clearAllScheduled();
   res.json({ ok: true });
 });
 
 router.post("/push/test", (_req: Request, res: Response): void => {
-  if (!pushSubscription) {
-    res.status(400).json({ error: "No subscription" });
+  if (!stored) {
+    res.status(400).json({ error: "No active subscription. Enable notifications first." });
     return;
   }
   sendPush({
     title: "Test Notification ✅",
-    body: "PGWOS notifications are working perfectly!",
-    tag: "pgwos-test"
+    body: "PGWOS push notifications are working perfectly!",
+    tag: "pgwos-test",
   });
   res.json({ ok: true });
 });
 
 router.post("/push/update-schedule", (req: Request, res: Response): void => {
-  const { morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
+  const { morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body as {
+    morningEnabled: boolean; morningTime: string; eveningEnabled: boolean; eveningTime: string;
+  };
+
+  if (stored) {
+    stored.schedule = { morningEnabled, morningTime, eveningEnabled, eveningTime };
+    saveSubscription();
+  }
+
   setupSchedule(morningEnabled ?? false, morningTime ?? "07:00", eveningEnabled ?? false, eveningTime ?? "21:00");
   res.json({ ok: true });
 });

@@ -4,8 +4,9 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 async function getVapidKey(): Promise<string> {
   const res = await fetch(`${API_BASE}/api/vapid-public-key`);
+  if (!res.ok) throw new Error("Failed to fetch VAPID key");
   const data = await res.json();
-  return data.publicKey;
+  return data.publicKey as string;
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -18,6 +19,18 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return outputArray;
 }
 
+async function getOrRegisterSW(): Promise<ServiceWorkerRegistration> {
+  const swUrl = `${API_BASE}/sw.js`;
+  const scope = `${API_BASE}/`;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration(scope);
+    if (existing) return existing;
+    return navigator.serviceWorker.register(swUrl, { scope });
+  } catch {
+    return navigator.serviceWorker.register(swUrl);
+  }
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -25,10 +38,10 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
 
   useEffect(() => {
-    setIsSupported("serviceWorker" in navigator && "PushManager" in window);
-    setPermission(Notification.permission);
-
-    if ("serviceWorker" in navigator) {
+    const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+    setIsSupported(supported);
+    if (supported) {
+      setPermission(Notification.permission);
       navigator.serviceWorker.getRegistration().then(async (reg) => {
         if (reg) {
           const sub = await reg.pushManager.getSubscription();
@@ -38,14 +51,15 @@ export function usePushNotifications() {
     }
   }, []);
 
-  const subscribe = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string) => {
+  const subscribe = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== "granted") return false;
+
+      const reg = await getOrRegisterSW();
+      await navigator.serviceWorker.ready;
 
       const vapidKey = await getVapidKey();
       const subscription = await reg.pushManager.subscribe({
@@ -62,14 +76,14 @@ export function usePushNotifications() {
       setIsSubscribed(true);
       return true;
     } catch (err) {
-      console.error("Push subscribe error:", err);
+      console.error("[PGWOS] Push subscribe error:", err);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const unsubscribe = async () => {
+  const unsubscribe = async (): Promise<void> => {
     setIsLoading(true);
     try {
       const reg = await navigator.serviceWorker.getRegistration();
@@ -80,17 +94,25 @@ export function usePushNotifications() {
       await fetch(`${API_BASE}/api/push/unsubscribe`, { method: "POST" });
       setIsSubscribed(false);
     } catch (err) {
-      console.error("Push unsubscribe error:", err);
+      console.error("[PGWOS] Push unsubscribe error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const sendTest = async () => {
-    await fetch(`${API_BASE}/api/push/test`, { method: "POST" });
+  const sendTest = async (): Promise<void> => {
+    try {
+      const res = await fetch(`${API_BASE}/api/push/test`, { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.warn("[PGWOS] Test push failed:", body);
+      }
+    } catch (err) {
+      console.error("[PGWOS] Test push error:", err);
+    }
   };
 
-  const updateSchedule = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string) => {
+  const updateSchedule = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string): Promise<void> => {
     await fetch(`${API_BASE}/api/push/update-schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

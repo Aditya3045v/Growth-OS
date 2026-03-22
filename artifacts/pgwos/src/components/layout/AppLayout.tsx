@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useGetStreak, useGetSettings } from "@workspace/api-client-react";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
 const NAV_ITEMS = [
   { href: "/",          icon: "home",             label: "Home"      },
@@ -27,13 +28,21 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { data: streak } = useGetStreak();
   const { data: settings } = useGetSettings();
+  const { isOnline } = useNetworkStatus();
 
   const pageTitle = PAGE_TITLES[location] ?? "PGWOS";
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0e0e0e] text-white font-['Inter']">
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-center gap-2 px-4 py-2 bg-[#ffbd5c] text-[#000] text-xs font-bold uppercase tracking-wider">
+          <span className="material-symbols-outlined text-[16px]">wifi_off</span>
+          You're offline — reading from cache
+        </div>
+      )}
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e]/90 backdrop-blur-xl">
+      <header className={`fixed left-0 right-0 z-50 bg-[#0e0e0e]/90 backdrop-blur-xl ${!isOnline ? "top-8" : "top-0"}`}>
         <div className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full overflow-hidden border border-[rgba(72,72,71,0.3)] bg-[#1a1a1a] flex items-center justify-center shrink-0">
