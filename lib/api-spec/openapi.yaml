@@ -1,22 +1,37 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: PGWOS API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: habits
+    description: Habit tracking
+  - name: tasks
+    description: Task management
+  - name: leads
+    description: CRM lead management
+  - name: events
+    description: Calendar events
+  - name: notes
+    description: Notes and learning log
+  - name: checkins
+    description: Daily check-ins
+  - name: stats
+    description: Analytics and performance stats
+  - name: settings
+    description: User settings
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +39,663 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── HABITS ───────────────────────────────────────────────────────────────
+  /habits:
+    get:
+      operationId: listHabits
+      tags: [habits]
+      summary: List all habits
+      responses:
+        "200":
+          description: List of habits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Habit"
+    post:
+      operationId: createHabit
+      tags: [habits]
+      summary: Create a habit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHabitBody"
+      responses:
+        "201":
+          description: Created habit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Habit"
+
+  /habits/{id}:
+    get:
+      operationId: getHabit
+      tags: [habits]
+      summary: Get a habit by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Habit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Habit"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateHabit
+      tags: [habits]
+      summary: Update a habit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHabitBody"
+      responses:
+        "200":
+          description: Updated habit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Habit"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteHabit
+      tags: [habits]
+      summary: Delete a habit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /habits/{id}/log:
+    post:
+      operationId: logHabit
+      tags: [habits]
+      summary: Log a habit completion for today
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogHabitBody"
+      responses:
+        "200":
+          description: Habit log entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HabitLog"
+
+  /habit-logs/today:
+    get:
+      operationId: getTodayHabitLogs
+      tags: [habits]
+      summary: Get all habit logs for today
+      responses:
+        "200":
+          description: Today's habit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HabitLog"
+
+  /habit-logs/history:
+    get:
+      operationId: getHabitHistory
+      tags: [habits]
+      summary: Get habit log history (last 30 days)
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Habit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HabitDaySummary"
+
+  # ─── TASKS ────────────────────────────────────────────────────────────────
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List all tasks
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskBody"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── LEADS ────────────────────────────────────────────────────────────────
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      summary: List all leads
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lead"
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLeadBody"
+      responses:
+        "201":
+          description: Created lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /leads/{id}:
+    get:
+      operationId: getLead
+      tags: [leads]
+      summary: Get a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateLead
+      tags: [leads]
+      summary: Update a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLeadBody"
+      responses:
+        "200":
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteLead
+      tags: [leads]
+      summary: Delete a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── EVENTS ───────────────────────────────────────────────────────────────
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List calendar events
+      parameters:
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: end
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarEvent"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a calendar event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEventBody"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarEvent"
+
+  /events/{id}:
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update a calendar event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEventBody"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarEvent"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete a calendar event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── NOTES ────────────────────────────────────────────────────────────────
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: tag
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteBody"
+      responses:
+        "201":
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /notes/{id}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNoteBody"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── CHECK-INS ────────────────────────────────────────────────────────────
+  /checkins:
+    get:
+      operationId: listCheckins
+      tags: [checkins]
+      summary: List check-ins
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of check-ins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Checkin"
+    post:
+      operationId: createCheckin
+      tags: [checkins]
+      summary: Create today's check-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckinBody"
+      responses:
+        "201":
+          description: Created check-in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+  /checkins/today:
+    get:
+      operationId: getTodayCheckin
+      tags: [checkins]
+      summary: Get today's check-in if it exists
+      responses:
+        "200":
+          description: Today's check-in or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckinOrNull"
+
+  # ─── STATS ────────────────────────────────────────────────────────────────
+  /stats/dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /stats/streak:
+    get:
+      operationId: getStreak
+      tags: [stats]
+      summary: Get current streak
+      responses:
+        "200":
+          description: Streak info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreakInfo"
+
+  /stats/analytics:
+    get:
+      operationId: getAnalytics
+      tags: [stats]
+      summary: Get analytics data for charts
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsData"
+
+  # ─── SETTINGS ─────────────────────────────────────────────────────────────
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get user settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update user settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsBody"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +706,677 @@ components:
       required:
         - status
 
+    # ── Habits ──────────────────────────────────────────────────────────────
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        inputType:
+          type: string
+          description: "checkbox | timer | number | notes | text"
+        isDefault:
+          type: boolean
+        isActive:
+          type: boolean
+        order:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - category
+        - inputType
+        - isDefault
+        - isActive
+        - order
+        - createdAt
+
+    CreateHabitBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        inputType:
+          type: string
+        order:
+          type: integer
+      required:
+        - title
+        - category
+        - inputType
+
+    UpdateHabitBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        inputType:
+          type: string
+        isActive:
+          type: boolean
+        order:
+          type: integer
+
+    HabitLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        habitId:
+          type: integer
+        date:
+          type: string
+          format: date
+        completed:
+          type: boolean
+        value:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        durationSeconds:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - habitId
+        - date
+        - completed
+        - value
+        - notes
+        - durationSeconds
+        - createdAt
+
+    LogHabitBody:
+      type: object
+      properties:
+        completed:
+          type: boolean
+        value:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        durationSeconds:
+          type: ["integer", "null"]
+      required:
+        - completed
+
+    HabitDaySummary:
+      type: object
+      properties:
+        date:
+          type: string
+        totalHabits:
+          type: integer
+        completedHabits:
+          type: integer
+        completionRate:
+          type: number
+      required:
+        - date
+        - totalHabits
+        - completedHabits
+        - completionRate
+
+    # ── Tasks ───────────────────────────────────────────────────────────────
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+          description: "low | medium | high"
+        status:
+          type: string
+          description: "pending | in_progress | completed"
+        dueDate:
+          type: ["string", "null"]
+        dueTime:
+          type: ["string", "null"]
+        isRecurring:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+      required:
+        - id
+        - title
+        - priority
+        - status
+        - isRecurring
+        - createdAt
+        - description
+        - dueDate
+        - dueTime
+        - completedAt
+
+    CreateTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+        dueDate:
+          type: ["string", "null"]
+        dueTime:
+          type: ["string", "null"]
+        isRecurring:
+          type: boolean
+      required:
+        - title
+        - priority
+
+    UpdateTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: ["string", "null"]
+        dueTime:
+          type: ["string", "null"]
+        isRecurring:
+          type: boolean
+
+    # ── Leads ───────────────────────────────────────────────────────────────
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        businessName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        source:
+          type: ["string", "null"]
+        status:
+          type: string
+          description: "new | contacted | interested | follow_up | closed | lost"
+        nextFollowUpDate:
+          type: ["string", "null"]
+        lastContactDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        dealValue:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - businessName
+        - phone
+        - email
+        - city
+        - industry
+        - source
+        - status
+        - nextFollowUpDate
+        - lastContactDate
+        - notes
+        - dealValue
+        - createdAt
+
+    CreateLeadBody:
+      type: object
+      properties:
+        name:
+          type: string
+        businessName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        source:
+          type: ["string", "null"]
+        status:
+          type: string
+        nextFollowUpDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        dealValue:
+          type: ["number", "null"]
+      required:
+        - name
+        - status
+
+    UpdateLeadBody:
+      type: object
+      properties:
+        name:
+          type: string
+        businessName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        source:
+          type: ["string", "null"]
+        status:
+          type: string
+        nextFollowUpDate:
+          type: ["string", "null"]
+        lastContactDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        dealValue:
+          type: ["number", "null"]
+
+    # ── Events ──────────────────────────────────────────────────────────────
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        eventType:
+          type: string
+          description: "task | meeting | follow_up | reminder"
+        startDate:
+          type: string
+        startTime:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - eventType
+        - startDate
+        - startTime
+        - endDate
+        - endTime
+        - description
+        - color
+        - createdAt
+
+    CreateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+        eventType:
+          type: string
+        startDate:
+          type: string
+        startTime:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+      required:
+        - title
+        - eventType
+        - startDate
+
+    UpdateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+        eventType:
+          type: string
+        startDate:
+          type: string
+        startTime:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+
+    # ── Notes ───────────────────────────────────────────────────────────────
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - content
+        - tags
+        - createdAt
+        - updatedAt
+
+    CreateNoteBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - content
+
+    UpdateNoteBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    # ── Check-ins ───────────────────────────────────────────────────────────
+    Checkin:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        mood:
+          type: string
+          description: "happy | neutral | low"
+        energyLevel:
+          type: integer
+        focusLevel:
+          type: integer
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - date
+        - mood
+        - energyLevel
+        - focusLevel
+        - notes
+        - createdAt
+
+    CheckinOrNull:
+      type: object
+      properties:
+        checkin:
+          oneOf:
+            - $ref: "#/components/schemas/Checkin"
+            - type: "null"
+      required:
+        - checkin
+
+    CreateCheckinBody:
+      type: object
+      properties:
+        mood:
+          type: string
+        energyLevel:
+          type: integer
+        focusLevel:
+          type: integer
+        notes:
+          type: ["string", "null"]
+      required:
+        - mood
+        - energyLevel
+        - focusLevel
+
+    # ── Stats ───────────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        streak:
+          type: integer
+        tasksCompletedToday:
+          type: integer
+        tasksTotalToday:
+          type: integer
+        habitCompletionRate:
+          type: number
+        habitsCompletedToday:
+          type: integer
+        habitsTotalToday:
+          type: integer
+        totalLeads:
+          type: integer
+        activeLeads:
+          type: integer
+        closedLeads:
+          type: integer
+        lostLeads:
+          type: integer
+        productivityScore:
+          type: number
+        messagesCount:
+          type: integer
+        followUpsToday:
+          type: integer
+      required:
+        - streak
+        - tasksCompletedToday
+        - tasksTotalToday
+        - habitCompletionRate
+        - habitsCompletedToday
+        - habitsTotalToday
+        - totalLeads
+        - activeLeads
+        - closedLeads
+        - lostLeads
+        - productivityScore
+        - messagesCount
+        - followUpsToday
+
+    StreakInfo:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        lastCheckinDate:
+          type: ["string", "null"]
+      required:
+        - currentStreak
+        - longestStreak
+        - lastCheckinDate
+
+    AnalyticsData:
+      type: object
+      properties:
+        dailySummaries:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailySummary"
+        leadStatusCounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeadStatusCount"
+        taskCompletionTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayStat"
+      required:
+        - dailySummaries
+        - leadStatusCounts
+        - taskCompletionTrend
+
+    DailySummary:
+      type: object
+      properties:
+        date:
+          type: string
+        tasksCompleted:
+          type: integer
+        habitsCompleted:
+          type: integer
+        productivityScore:
+          type: number
+      required:
+        - date
+        - tasksCompleted
+        - habitsCompleted
+        - productivityScore
+
+    LeadStatusCount:
+      type: object
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+      required:
+        - status
+        - count
+
+    DayStat:
+      type: object
+      properties:
+        date:
+          type: string
+        value:
+          type: integer
+      required:
+        - date
+        - value
+
+    # ── Settings ─────────────────────────────────────────────────────────────
+    Settings:
+      type: object
+      properties:
+        id:
+          type: integer
+        userName:
+          type: string
+        darkMode:
+          type: boolean
+        morningReminderEnabled:
+          type: boolean
+        afternoonReminderEnabled:
+          type: boolean
+        eveningReminderEnabled:
+          type: boolean
+        morningReminderTime:
+          type: string
+        afternoonReminderTime:
+          type: string
+        eveningReminderTime:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userName
+        - darkMode
+        - morningReminderEnabled
+        - afternoonReminderEnabled
+        - eveningReminderEnabled
+        - morningReminderTime
+        - afternoonReminderTime
+        - eveningReminderTime
+        - createdAt
+
+    UpdateSettingsBody:
+      type: object
+      properties:
+        userName:
+          type: string
+        darkMode:
+          type: boolean
+        morningReminderEnabled:
+          type: boolean
+        afternoonReminderEnabled:
+          type: boolean
+        eveningReminderEnabled:
+          type: boolean
+        morningReminderTime:
+          type: string
+        afternoonReminderTime:
+          type: string
+        eveningReminderTime:
+          type: string
