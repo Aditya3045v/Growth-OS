@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "postgresql-16"]
 
 [[artifacts]]
 id = "artifacts/api-server"
@@ -30,3 +30,6 @@ timeoutMs = 20000
 [userenv.shared]
 VAPID_PUBLIC_KEY = "BCDIgrotSkuwwqS7rYnpCPMXpJlWJ0TzkyDBUNvd0pz5I05eCjtgLFUoTn3GBtSHgHm6FLExHEM-84gJfyuJknw"
 VAPID_PRIVATE_KEY = "S_M7rpG0NzLdJmPOr8YsCicuPUVQLX7b2033ivj5AZU"
+
+[nix]
+channel = "stable-25_05"
