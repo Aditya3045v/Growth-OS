@@ -13,13 +13,16 @@ export default function Analytics() {
   const { data: analytics } = useGetAnalytics({ days });
   const { data: streak } = useGetStreak();
 
-  const summary = analytics?.summary;
   const chartData = analytics?.dailySummaries?.slice(-days) || [];
   const leadData = analytics?.leadStatusCounts || [];
 
-  const avgHabits = summary?.avgHabitsPerDay ?? 0;
-  const avgTasks = summary?.avgTasksPerDay ?? 0;
-  const maxStreak = streak?.maxStreak ?? 0;
+  const avgHabits = chartData.length > 0
+    ? chartData.reduce((s, d) => s + (d.habitsCompleted ?? 0), 0) / chartData.length
+    : 0;
+  const avgTasks = chartData.length > 0
+    ? chartData.reduce((s, d) => s + (d.tasksCompleted ?? 0), 0) / chartData.length
+    : 0;
+  const maxStreak = streak?.longestStreak ?? 0;
   const currentStreak = streak?.currentStreak ?? 0;
 
   return (

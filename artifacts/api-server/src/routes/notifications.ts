@@ -1,35 +1,43 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import webpush from "web-push";
 
 const router = Router();
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BCDIgrotSkuwwqS7rYnpCPMXpJlWJ0TzkyDBUNvd0pz5I05eCjtgLFUoTn3GBtSHgHm6FLExHEM-84gJfyuJknw";
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "S_M7rpG0NzLdJmPOr8YsCicuPUVQLX7b2033ivj5AZU";
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
-webpush.setVapidDetails("mailto:pgwos@app.local", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+  console.warn("VAPID keys not configured — push notifications disabled.");
+} else {
+  webpush.setVapidDetails("mailto:pgwos@app.local", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+}
 
 let pushSubscription: webpush.PushSubscription | null = null;
 
 const scheduledJobs: NodeJS.Timeout[] = [];
 
-function scheduleNotification(hour: number, minute: number, title: string, body: string) {
+function sendPush(payload: object): void {
+  if (!pushSubscription) return;
+  webpush.sendNotification(pushSubscription, JSON.stringify(payload)).catch(() => {});
+}
+
+function scheduleNotification(hour: number, minute: number, title: string, body: string): void {
   const checkAndSend = () => {
     const now = new Date();
-    if (now.getHours() === hour && now.getMinutes() === minute && pushSubscription) {
-      webpush.sendNotification(pushSubscription, JSON.stringify({ title, body, tag: "pgwos-reminder" })).catch(() => {});
+    if (now.getHours() === hour && now.getMinutes() === minute) {
+      sendPush({ title, body, tag: "pgwos-reminder" });
     }
   };
   const interval = setInterval(checkAndSend, 60000);
   scheduledJobs.push(interval);
-  return interval;
 }
 
-function clearAllScheduled() {
+function clearAllScheduled(): void {
   scheduledJobs.forEach(clearInterval);
   scheduledJobs.length = 0;
 }
 
-function setupSchedule(morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string) {
+function setupSchedule(morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string): void {
   clearAllScheduled();
   if (morningEnabled && morningTime) {
     const [h, m] = morningTime.split(":").map(Number);
@@ -41,13 +49,16 @@ function setupSchedule(morningEnabled: boolean, morningTime: string, eveningEnab
   }
 }
 
-router.get("/api/vapid-public-key", (_req, res) => {
-  res.json({ publicKey: VAPID_PUBLIC_KEY });
+router.get("/api/vapid-public-key", (_req: Request, res: Response): void => {
+  res.json({ publicKey: VAPID_PUBLIC_KEY || "" });
 });
 
-router.post("/api/push/subscribe", (req, res) => {
+router.post("/api/push/subscribe", (req: Request, res: Response): void => {
   const { subscription, morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
-  if (!subscription) return res.status(400).json({ error: "No subscription" });
+  if (!subscription) {
+    res.status(400).json({ error: "No subscription" });
+    return;
+  }
   pushSubscription = subscription;
   setupSchedule(
     morningEnabled ?? false,
@@ -55,31 +66,34 @@ router.post("/api/push/subscribe", (req, res) => {
     eveningEnabled ?? false,
     eveningTime ?? "21:00"
   );
-  webpush.sendNotification(pushSubscription, JSON.stringify({
+  sendPush({
     title: "PGWOS Activated 🚀",
     body: "Push notifications are now enabled. You'll be reminded to check in daily!",
     tag: "pgwos-welcome"
-  })).catch(() => {});
+  });
   res.json({ ok: true });
 });
 
-router.post("/api/push/unsubscribe", (_req, res) => {
+router.post("/api/push/unsubscribe", (_req: Request, res: Response): void => {
   pushSubscription = null;
   clearAllScheduled();
   res.json({ ok: true });
 });
 
-router.post("/api/push/test", (_req, res) => {
-  if (!pushSubscription) return res.status(400).json({ error: "No subscription" });
-  webpush.sendNotification(pushSubscription, JSON.stringify({
+router.post("/api/push/test", (_req: Request, res: Response): void => {
+  if (!pushSubscription) {
+    res.status(400).json({ error: "No subscription" });
+    return;
+  }
+  sendPush({
     title: "Test Notification ✅",
     body: "PGWOS notifications are working perfectly!",
     tag: "pgwos-test"
-  })).catch(console.error);
+  });
   res.json({ ok: true });
 });
 
-router.post("/api/push/update-schedule", (req, res) => {
+router.post("/api/push/update-schedule", (req: Request, res: Response): void => {
   const { morningEnabled, morningTime, eveningEnabled, eveningTime } = req.body;
   setupSchedule(morningEnabled ?? false, morningTime ?? "07:00", eveningEnabled ?? false, eveningTime ?? "21:00");
   res.json({ ok: true });

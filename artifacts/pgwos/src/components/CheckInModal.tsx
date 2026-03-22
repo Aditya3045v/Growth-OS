@@ -32,6 +32,7 @@ export function CheckInModal() {
       }, 2000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [todayCheckin]);
 
   const moodToStr = (m: number) => m <= 2 ? "low" : m === 3 ? "neutral" : "happy";

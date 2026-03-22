@@ -142,7 +142,7 @@ export default function Calendar() {
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="font-['Manrope'] font-bold text-base text-white">{event.title}</h4>
                         <span className="bg-[rgba(148,170,255,0.1)] text-[#94aaff] text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
-                          {event.type || "Event"}
+                          {event.eventType || "Event"}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-[#adaaaa] text-xs">
@@ -196,7 +196,7 @@ function EventForm({ initial, defaultDate, onClose, onSaved }: {
       title: fd.get("title") as string,
       startDate,
       endDate,
-      type: fd.get("type") as string || "event",
+      eventType: fd.get("type") as string || "event",
     };
     const opts = { onSuccess: () => { onSaved(); onClose(); } };
     if (initial) {
@@ -250,7 +250,7 @@ function EventForm({ initial, defaultDate, onClose, onSaved }: {
           </div>
         </div>
 
-        <select name="type" defaultValue={initial?.type || "event"}
+        <select name="type" defaultValue={initial?.eventType || "event"}
           className="w-full bg-[#262626] border-none rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
         >
           <option value="event">Event</option>
