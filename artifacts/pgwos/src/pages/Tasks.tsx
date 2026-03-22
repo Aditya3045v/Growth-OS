@@ -1,9 +1,28 @@
 import { useState } from "react";
 import { useListTasks, useCreateTask, useUpdateTask, useDeleteTask } from "@workspace/api-client-react";
+import type { Task } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 
 type Priority = "low" | "medium" | "high";
+
+type SortBy = "priority" | "dueDate" | "createdAt";
+type FilterBy = "all" | "low" | "medium" | "high";
+
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+function sortTasks(tasks: Task[], sortBy: SortBy): Task[] {
+  return [...tasks].sort((a, b) => {
+    if (sortBy === "priority") return (PRIORITY_ORDER[a.priority] ?? 1) - (PRIORITY_ORDER[b.priority] ?? 1);
+    if (sortBy === "dueDate") {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return a.dueDate.localeCompare(b.dueDate);
+    }
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+}
 
 export default function Tasks() {
   const { data: tasks, isLoading } = useListTasks();
@@ -11,7 +30,9 @@ export default function Tasks() {
   const deleteTask = useDeleteTask();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [editTask, setEditTask] = useState<any>(null);
+  const [editTask, setEditTask] = useState<Task | null>(null);
+  const [sortBy, setSortBy] = useState<SortBy>("priority");
+  const [filterBy, setFilterBy] = useState<FilterBy>("all");
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
@@ -28,12 +49,12 @@ export default function Tasks() {
     }
   };
 
-  const pending = tasks?.filter((t) => t.status !== "completed") || [];
-  const completed = tasks?.filter((t) => t.status === "completed") || [];
+  const filtered = tasks?.filter((t) => filterBy === "all" || t.priority === filterBy) || [];
+  const pending = sortTasks(filtered.filter((t) => t.status !== "completed"), sortBy);
+  const completed = filtered.filter((t) => t.status === "completed");
 
   return (
     <div className="py-6 space-y-6">
-      {/* Header */}
       <section className="space-y-2">
         <p className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#94aaff] font-semibold">Zenith OS Sanctuary</p>
         <h2 className="font-['Manrope'] text-4xl font-extrabold tracking-tight">
@@ -41,15 +62,40 @@ export default function Tasks() {
         </h2>
       </section>
 
-      {/* Add Task Button */}
-      <button
-        onClick={() => { setEditTask(null); setShowForm(true); }}
-        className="w-full ds-liquid-gradient py-4 rounded-2xl font-['Manrope'] font-extrabold text-[#000] text-base ds-inner-glow active:scale-[0.98] transition-transform shadow-[0_20px_40px_-10px_rgba(148,170,255,0.25)]"
-      >
-        + New Task
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-1.5 bg-[#131313] rounded-xl p-1 ds-ghost-border">
+          {(["all", "high", "medium", "low"] as FilterBy[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilterBy(f)}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                filterBy === f ? "bg-[#94aaff] text-[#000]" : "text-[#adaaaa] hover:text-white"
+              }`}
+            >
+              {f === "all" ? "All" : f}
+            </button>
+          ))}
+        </div>
 
-      {/* Task Form */}
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortBy)}
+          className="bg-[#131313] border-none rounded-xl py-2 px-3 text-[11px] font-bold uppercase tracking-wider text-[#adaaaa] focus:outline-none focus:ring-1 focus:ring-[#94aaff] ds-ghost-border"
+        >
+          <option value="priority">Sort: Priority</option>
+          <option value="dueDate">Sort: Due Date</option>
+          <option value="createdAt">Sort: Newest</option>
+        </select>
+
+        <button
+          onClick={() => { setEditTask(null); setShowForm(true); }}
+          className="ml-auto flex items-center gap-2 px-5 py-2.5 ds-liquid-gradient rounded-2xl font-['Manrope'] font-bold text-[#000] ds-inner-glow active:scale-[0.98] transition-transform text-sm"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          New Task
+        </button>
+      </div>
+
       {showForm && (
         <TaskForm
           initial={editTask}
@@ -58,7 +104,6 @@ export default function Tasks() {
         />
       )}
 
-      {/* Pending Tasks */}
       {pending.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-[10px] font-['Inter'] uppercase tracking-[0.15em] text-[#adaaaa] font-bold px-1">
@@ -105,7 +150,7 @@ export default function Tasks() {
 }
 
 function TaskRow({ task, onToggle, onDelete, onEdit }: {
-  task: any; onToggle: () => void; onDelete: () => void; onEdit: () => void;
+  task: Task; onToggle: () => void; onDelete: () => void; onEdit: () => void;
 }) {
   const priorityStyle: Record<Priority, { color: string; bg: string }> = {
     high:   { color: "#ff6e84", bg: "rgba(255,110,132,0.1)" },
@@ -164,10 +209,10 @@ function TaskRow({ task, onToggle, onDelete, onEdit }: {
   );
 }
 
-function TaskForm({ initial, onClose, onSaved }: { initial: any; onClose: () => void; onSaved: () => void }) {
+function TaskForm({ initial, onClose, onSaved }: { initial: Task | null; onClose: () => void; onSaved: () => void }) {
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
-  const [priority, setPriority] = useState<Priority>(initial?.priority || "medium");
+  const [priority, setPriority] = useState<Priority>((initial?.priority as Priority) || "medium");
   const [title, setTitle] = useState(initial?.title || "");
   const [dueDate, setDueDate] = useState(initial?.dueDate ? initial.dueDate.split("T")[0] : "");
   const [dueTime, setDueTime] = useState(initial?.dueTime || "");

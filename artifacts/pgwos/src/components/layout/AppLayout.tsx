@@ -3,11 +3,13 @@ import { Link, useLocation } from "wouter";
 import { useGetStreak, useGetSettings } from "@workspace/api-client-react";
 
 const NAV_ITEMS = [
-  { href: "/",          icon: "home",         label: "Home"     },
-  { href: "/tasks",     icon: "task_alt",     label: "Tasks"    },
-  { href: "/habits",    icon: "self_improvement", label: "Growth" },
-  { href: "/leads",     icon: "people",       label: "Pipeline" },
-  { href: "/analytics", icon: "bar_chart",    label: "Insights" },
+  { href: "/",          icon: "home",             label: "Home"      },
+  { href: "/tasks",     icon: "task_alt",         label: "Tasks"     },
+  { href: "/calendar",  icon: "calendar_month",   label: "Schedule"  },
+  { href: "/habits",    icon: "self_improvement", label: "Growth"    },
+  { href: "/leads",     icon: "people",           label: "Pipeline"  },
+  { href: "/analytics", icon: "bar_chart",        label: "Insights"  },
+  { href: "/notes",     icon: "auto_stories",     label: "Notes"     },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -88,27 +90,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-
-        {/* Notes quick access */}
-        <Link href="/notes">
-          <button
-            className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 ${
-              location === "/notes" ? "" : "text-[#adaaaa] hover:text-white"
-            }`}
-          >
-            {location === "/notes" ? (
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-[#94aaff] to-[#809bff] text-[#0e0e0e] shadow-[0_4px_20px_rgba(148,170,255,0.3)]">
-                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  auto_stories
-                </span>
-              </div>
-            ) : (
-              <div className="p-3">
-                <span className="material-symbols-outlined text-[22px]">auto_stories</span>
-              </div>
-            )}
-          </button>
-        </Link>
       </nav>
     </div>
   );

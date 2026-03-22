@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useListLeads, useCreateLead, useUpdateLead, useDeleteLead } from "@workspace/api-client-react";
+import type { Lead } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 
 const COLUMNS = [
   { id: "new",        title: "New",       color: "#94aaff" },
@@ -18,11 +20,11 @@ export default function Leads() {
   const updateLead = useUpdateLead();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [editLead, setEditLead] = useState<any>(null);
+  const [editLead, setEditLead] = useState<Lead | null>(null);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     if (result.source.droppableId === result.destination.droppableId) return;
     updateLead.mutate({
@@ -126,7 +128,7 @@ export default function Leads() {
 }
 
 function LeadCard({ lead, color, isDragging, onEdit }: {
-  lead: any; color: string; isDragging: boolean; onEdit: () => void;
+  lead: Lead; color: string; isDragging: boolean; onEdit: () => void;
 }) {
   const deleteLead = useDeleteLead();
   const queryClient = useQueryClient();
@@ -198,7 +200,7 @@ function LeadCard({ lead, color, isDragging, onEdit }: {
 }
 
 function LeadFormModal({ initial, onClose, onSaved }: {
-  initial: any; onClose: () => void; onSaved: () => void;
+  initial: Lead | null; onClose: () => void; onSaved: () => void;
 }) {
   const createLead = useCreateLead();
   const updateLead = useUpdateLead();
@@ -211,8 +213,12 @@ function LeadFormModal({ initial, onClose, onSaved }: {
       businessName: (fd.get("businessName") as string) || null,
       email: (fd.get("email") as string) || null,
       phone: (fd.get("phone") as string) || null,
+      city: (fd.get("city") as string) || null,
+      industry: (fd.get("industry") as string) || null,
+      source: (fd.get("source") as string) || null,
       status: (fd.get("status") as string) || "new",
       dealValue: fd.get("dealValue") ? parseInt(fd.get("dealValue") as string) : null,
+      nextFollowUpDate: (fd.get("nextFollowUpDate") as string) || null,
       notes: (fd.get("notes") as string) || null,
     };
     const opts = { onSuccess: () => { onSaved(); onClose(); } };
@@ -250,6 +256,26 @@ function LeadFormModal({ initial, onClose, onSaved }: {
             <input name="phone" defaultValue={initial?.phone || ""}
               className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
               placeholder="Phone"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input name="city" defaultValue={initial?.city || ""}
+              className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+              placeholder="City"
+            />
+            <input name="industry" defaultValue={initial?.industry || ""}
+              className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+              placeholder="Industry"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input name="source" defaultValue={initial?.source || ""}
+              className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+              placeholder="Lead Source"
+            />
+            <input name="nextFollowUpDate" type="date" defaultValue={initial?.nextFollowUpDate?.split("T")[0] || ""}
+              className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+              placeholder="Follow-up Date"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">

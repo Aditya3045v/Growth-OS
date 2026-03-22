@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useListNotes, useCreateNote, useUpdateNote, useDeleteNote } from "@workspace/api-client-react";
+import type { Note } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { format } from "date-fns";
 
 export default function Notes() {
@@ -8,7 +10,7 @@ export default function Notes() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const { data: notes } = useListNotes(search ? { search } : undefined);
   const [showForm, setShowForm] = useState(false);
-  const [editNote, setEditNote] = useState<any>(null);
+  const [editNote, setEditNote] = useState<Note | null>(null);
   const queryClient = useQueryClient();
   const deleteNote = useDeleteNote();
 
@@ -49,6 +51,53 @@ export default function Notes() {
             </button>
           </div>
         </div>
+      </section>
+
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Link href="/calendar">
+          <button className="w-full flex items-center gap-3 p-4 bg-[#131313] rounded-2xl ds-ghost-border hover:border-[rgba(148,170,255,0.2)] transition-all group active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(148,170,255,0.1)] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[#94aaff] text-xl">calendar_month</span>
+            </div>
+            <div className="text-left min-w-0">
+              <p className="font-['Manrope'] font-bold text-sm text-white">Calendar</p>
+              <p className="text-[10px] text-[#adaaaa] truncate">Schedule &amp; events</p>
+            </div>
+          </button>
+        </Link>
+        <Link href="/tasks">
+          <button className="w-full flex items-center gap-3 p-4 bg-[#131313] rounded-2xl ds-ghost-border hover:border-[rgba(92,253,128,0.2)] transition-all group active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(92,253,128,0.1)] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[#5cfd80] text-xl">task_alt</span>
+            </div>
+            <div className="text-left min-w-0">
+              <p className="font-['Manrope'] font-bold text-sm text-white">Tasks</p>
+              <p className="text-[10px] text-[#adaaaa] truncate">Action items</p>
+            </div>
+          </button>
+        </Link>
+        <Link href="/habits">
+          <button className="w-full flex items-center gap-3 p-4 bg-[#131313] rounded-2xl ds-ghost-border hover:border-[rgba(255,189,92,0.2)] transition-all group active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(255,189,92,0.1)] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[#ffbd5c] text-xl">self_improvement</span>
+            </div>
+            <div className="text-left min-w-0">
+              <p className="font-['Manrope'] font-bold text-sm text-white">Habits</p>
+              <p className="text-[10px] text-[#adaaaa] truncate">Daily growth</p>
+            </div>
+          </button>
+        </Link>
+        <Link href="/analytics">
+          <button className="w-full flex items-center gap-3 p-4 bg-[#131313] rounded-2xl ds-ghost-border hover:border-[rgba(148,170,255,0.2)] transition-all group active:scale-[0.98]">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(148,170,255,0.1)] flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[#94aaff] text-xl">bar_chart</span>
+            </div>
+            <div className="text-left min-w-0">
+              <p className="font-['Manrope'] font-bold text-sm text-white">Analytics</p>
+              <p className="text-[10px] text-[#adaaaa] truncate">Insights &amp; data</p>
+            </div>
+          </button>
+        </Link>
       </section>
 
       {/* Tag Filters */}
@@ -155,7 +204,7 @@ export default function Notes() {
 }
 
 function NoteForm({ initial, onClose, onSaved }: {
-  initial: any; onClose: () => void; onSaved: () => void;
+  initial: Note | null; onClose: () => void; onSaved: () => void;
 }) {
   const createNote = useCreateNote();
   const updateNote = useUpdateNote();
