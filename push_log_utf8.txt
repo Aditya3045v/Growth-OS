@@ -1,0 +1,28 @@
+﻿
+> @workspace/db@0.0.0 push C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file 'C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db\drizzle.config.ts'
+node.exe : DATABASE_URL, 
+ensure the database is 
+provisioned
+At C:\Users\ADITYA PODDAR\A
+ppData\Roaming\npm\pnpm.ps1
+:24 char:5
++     & "node$exe"  "$based
+ir/node_modules/pnpm/bin/pn
+pm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (DAT  
+  ABASE_URL, e... is pro   
+ visioned:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db:
+ΓÇëERR_PNPM_RECURSIVE_RUN_FIRST_FAILΓÇë @workspace/db@0.0.0 push: `drizzle-kit push --config ./drizzle.config.ts`
+Exit status 1
