@@ -51,7 +51,10 @@ export function usePushNotifications() {
     }
   }, []);
 
-  const subscribe = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string): Promise<boolean> => {
+  const subscribe = async (
+    morningEnabled: boolean, morningTime: string, morningMessage: string,
+    eveningEnabled: boolean, eveningTime: string, eveningMessage: string
+  ): Promise<boolean> => {
     setIsLoading(true);
     try {
       const perm = await Notification.requestPermission();
@@ -70,7 +73,11 @@ export function usePushNotifications() {
       await fetch(`${API_BASE}/api/push/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription, morningEnabled, morningTime, eveningEnabled, eveningTime }),
+        body: JSON.stringify({ 
+          subscription, 
+          morningEnabled, morningTime, morningMessage, 
+          eveningEnabled, eveningTime, eveningMessage 
+        }),
       });
 
       setIsSubscribed(true);
@@ -112,11 +119,17 @@ export function usePushNotifications() {
     }
   };
 
-  const updateSchedule = async (morningEnabled: boolean, morningTime: string, eveningEnabled: boolean, eveningTime: string): Promise<void> => {
+  const updateSchedule = async (
+    morningEnabled: boolean, morningTime: string, morningMessage: string,
+    eveningEnabled: boolean, eveningTime: string, eveningMessage: string
+  ): Promise<void> => {
     await fetch(`${API_BASE}/api/push/update-schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ morningEnabled, morningTime, eveningEnabled, eveningTime }),
+      body: JSON.stringify({ 
+        morningEnabled, morningTime, morningMessage, 
+        eveningEnabled, eveningTime, eveningMessage 
+      }),
     });
   };
 

@@ -22,5 +22,5 @@ export interface Task {
   isRecurring: boolean;
   createdAt: Date;
   /** @nullable */
-  completedAt: string | null;
+  completedAt: Date | null;
 }

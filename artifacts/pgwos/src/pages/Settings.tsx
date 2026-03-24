@@ -13,8 +13,10 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(true);
   const [morningEnabled, setMorningEnabled] = useState(true);
   const [morningTime, setMorningTime] = useState("07:00");
+  const [morningMessage, setMorningMessage] = useState("Time for your daily check-in and habit review.");
   const [eveningEnabled, setEveningEnabled] = useState(true);
-  const [eveningTime, setEveningTime] = useState("21:00");
+  const [eveningTime, setEveningTime] = useState("22:00");
+  const [eveningMessage, setEveningMessage] = useState("Review your progress and plan tomorrow.");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function Settings() {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
         if (isSubscribed) {
-          updateSchedule(morningEnabled, morningTime, eveningEnabled, eveningTime);
+          updateSchedule(morningEnabled, morningTime, morningMessage, eveningEnabled, eveningTime, eveningMessage);
         }
       }
     });
@@ -124,14 +126,25 @@ export default function Settings() {
           </div>
 
           {morningEnabled && (
-            <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
-              <span className="text-[#adaaaa] text-sm">Morning time</span>
-              <input
-                type="time"
-                value={morningTime}
-                onChange={(e) => setMorningTime(e.target.value)}
-                className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
-              />
+            <div className="space-y-3 p-4 bg-[#1a1a1a] rounded-xl transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-[#adaaaa] text-sm font-bold uppercase tracking-widest text-[10px]">Morning time</span>
+                <input
+                  type="time"
+                  value={morningTime}
+                  onChange={(e) => setMorningTime(e.target.value)}
+                  className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] text-[#adaaaa] font-bold uppercase tracking-widest">Personalized Message</label>
+                <input
+                  value={morningMessage}
+                  onChange={(e) => setMorningMessage(e.target.value)}
+                  className="w-full bg-[#262626] border-none rounded-xl py-3 px-4 text-white text-sm placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+                  placeholder="Wake up, champion!"
+                />
+              </div>
             </div>
           )}
 
@@ -147,14 +160,25 @@ export default function Settings() {
           </div>
 
           {eveningEnabled && (
-            <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
-              <span className="text-[#adaaaa] text-sm">Evening time</span>
-              <input
-                type="time"
-                value={eveningTime}
-                onChange={(e) => setEveningTime(e.target.value)}
-                className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
-              />
+            <div className="space-y-3 p-4 bg-[#1a1a1a] rounded-xl transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-[#adaaaa] text-sm font-bold uppercase tracking-widest text-[10px]">Evening time</span>
+                <input
+                  type="time"
+                  value={eveningTime}
+                  onChange={(e) => setEveningTime(e.target.value)}
+                  className="bg-[#262626] border-none rounded-xl text-white py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#94aaff] font-['Manrope'] font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] text-[#adaaaa] font-bold uppercase tracking-widest">Personalized Message</label>
+                <input
+                  value={eveningMessage}
+                  onChange={(e) => setEveningMessage(e.target.value)}
+                  className="w-full bg-[#262626] border-none rounded-xl py-3 px-4 text-white text-sm placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
+                  placeholder="Reflect on your day..."
+                />
+              </div>
             </div>
           )}
         </div>
@@ -186,7 +210,7 @@ export default function Settings() {
                 <button
                   type="button"
                   disabled={pushLoading || permission === "denied"}
-                  onClick={() => subscribe(morningEnabled, morningTime, eveningEnabled, eveningTime)}
+                  onClick={() => subscribe(morningEnabled, morningTime, morningMessage, eveningEnabled, eveningTime, eveningMessage)}
                   className="flex-1 ds-liquid-gradient py-3.5 rounded-2xl font-['Manrope'] font-bold text-[#000] text-sm ds-inner-glow active:scale-[0.98] transition-transform disabled:opacity-40"
                 >
                   {pushLoading ? "Enabling..." : permission === "denied" ? "Blocked by Browser" : "Enable Notifications"}
@@ -227,6 +251,7 @@ export default function Settings() {
     </div>
   );
 }
+
 
 function Toggle({ checked, onChange, color }: { checked: boolean; onChange: (v: boolean) => void; color: string }) {
   return (

@@ -165,7 +165,7 @@ export const ListTasksResponseItem = zod.object({
   dueTime: zod.string().nullable(),
   isRecurring: zod.boolean(),
   createdAt: zod.date(),
-  completedAt: zod.string().nullable(),
+  completedAt: zod.date().nullable(),
 });
 export const ListTasksResponse = zod.array(ListTasksResponseItem);
 
@@ -198,7 +198,7 @@ export const GetTaskResponse = zod.object({
   dueTime: zod.string().nullable(),
   isRecurring: zod.boolean(),
   createdAt: zod.date(),
-  completedAt: zod.string().nullable(),
+  completedAt: zod.date().nullable(),
 });
 
 /**
@@ -228,7 +228,7 @@ export const UpdateTaskResponse = zod.object({
   dueTime: zod.string().nullable(),
   isRecurring: zod.boolean(),
   createdAt: zod.date(),
-  completedAt: zod.string().nullable(),
+  completedAt: zod.date().nullable(),
 });
 
 /**

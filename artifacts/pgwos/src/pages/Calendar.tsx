@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useListEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from "@workspace/api-client-react";
-import type { CalendarEvent } from "@workspace/api-client-react";
+import { useListEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useListTasks } from "@workspace/api-client-react";
+import type { CalendarEvent, Task } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   format, addMonths, subMonths, eachDayOfInterval,
@@ -13,6 +13,7 @@ const HOURS = Array.from({ length: 14 }, (_, i) => i + 7);
 
 export default function Calendar() {
   const { data: events } = useListEvents();
+  const { data: tasks } = useListTasks();
   const queryClient = useQueryClient();
   const deleteEvent = useDeleteEvent();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +22,10 @@ export default function Calendar() {
   const [showForm, setShowForm] = useState(false);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+  };
 
   const removeEvent = (id: number) => {
     if (confirm("Delete this event?")) {
@@ -49,6 +53,9 @@ export default function Calendar() {
     }
     return format(selectedDate, "EEEE, MMMM d, yyyy");
   };
+
+  const allEvents = events || [];
+  const allTasks = tasks || [];
 
   return (
     <div className="py-6 space-y-6">
@@ -108,7 +115,8 @@ export default function Calendar() {
       {viewMode === "day" && (
         <DayView
           selectedDate={selectedDate}
-          events={events || []}
+          events={allEvents}
+          tasks={allTasks}
           onEdit={(ev) => { setEditEvent(ev); setShowForm(true); }}
           onDelete={removeEvent}
           onSelectDate={setSelectedDate}
@@ -117,7 +125,8 @@ export default function Calendar() {
       {viewMode === "week" && (
         <WeekView
           selectedDate={selectedDate}
-          events={events || []}
+          events={allEvents}
+          tasks={allTasks}
           onSelectDate={(d) => { setSelectedDate(d); setViewMode("day"); }}
         />
       )}
@@ -125,7 +134,8 @@ export default function Calendar() {
         <MonthView
           currentMonth={currentMonth}
           selectedDate={selectedDate}
-          events={events || []}
+          events={allEvents}
+          tasks={allTasks}
           onSelectDate={(d) => { setSelectedDate(d); setViewMode("day"); }}
         />
       )}
@@ -133,16 +143,19 @@ export default function Calendar() {
   );
 }
 
-function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
+function DayView({ selectedDate, events, tasks, onEdit, onDelete, onSelectDate }: {
   selectedDate: Date;
   events: CalendarEvent[];
+  tasks: Task[];
   onEdit: (ev: CalendarEvent) => void;
   onDelete: (id: number) => void;
   onSelectDate: (d: Date) => void;
 }) {
   const weekStart = subDays(selectedDate, selectedDate.getDay());
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  
   const dayEvents = events.filter((e) => isSameDay(parseISO(e.startDate), selectedDate));
+  const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(parseISO(t.dueDate), selectedDate));
 
   return (
     <>
@@ -152,6 +165,9 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
           const isSelected = isSameDay(day, selectedDate);
           const isToday = isSameDay(day, new Date());
           const hasEvents = events.some((e) => isSameDay(parseISO(e.startDate), day));
+          const hasTasks = tasks.some((t) => t.dueDate && isSameDay(parseISO(t.dueDate), day));
+          const hasItems = hasEvents || hasTasks;
+
           return (
             <button
               key={day.toISOString()}
@@ -168,8 +184,8 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
               <span className={`font-['Manrope'] font-extrabold text-xl ${isSelected ? "text-[#000]" : isToday ? "text-[#94aaff]" : "text-white"}`}>
                 {format(day, "d")}
               </span>
-              {hasEvents && !isSelected && <div className="w-1.5 h-1.5 bg-[#94aaff] rounded-full mt-1" />}
-              {isSelected && hasEvents && <div className="w-1.5 h-1.5 bg-[rgba(0,0,0,0.5)] rounded-full mt-1" />}
+              {hasItems && !isSelected && <div className="w-1.5 h-1.5 bg-[#94aaff] rounded-full mt-1" />}
+              {isSelected && hasItems && <div className="w-1.5 h-1.5 bg-[rgba(0,0,0,0.5)] rounded-full mt-1" />}
             </button>
           );
         })}
@@ -179,7 +195,9 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
       <div className="bg-[#131313] rounded-2xl ds-ghost-border overflow-hidden">
         <div className="px-6 py-4 border-b border-[rgba(72,72,71,0.1)]">
           <h3 className="font-['Manrope'] font-bold text-base">{format(selectedDate, "EEEE, MMMM d")}</h3>
-          <p className="text-[#adaaaa] text-sm">{dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}</p>
+          <p className="text-[#adaaaa] text-sm">
+            {dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}, {dayTasks.length} task{dayTasks.length !== 1 ? "s" : ""}
+          </p>
         </div>
         <div className="relative">
           <div className="absolute left-[72px] top-0 bottom-0 w-[1px] bg-[rgba(72,72,71,0.1)]" />
@@ -188,6 +206,12 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
               const h = parseInt(e.startDate.split("T")[1]?.split(":")[0] || "0");
               return h === hour;
             });
+            const hourTasks = dayTasks.filter((t) => {
+              if (!t.dueTime) return false;
+              const h = parseInt(t.dueTime.split(":")[0]);
+              return h === hour;
+            });
+
             return (
               <div key={hour} className="flex min-h-[72px]">
                 <div className="w-[72px] pt-2 px-4 shrink-0">
@@ -196,10 +220,12 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
                   </span>
                 </div>
                 <div className="flex-1 pb-4 border-b border-[rgba(72,72,71,0.05)] relative pr-4">
+                  {/* Events */}
                   {hourEvents.map((event) => (
                     <div
-                      key={event.id}
+                      key={`event-${event.id}`}
                       className="absolute inset-x-0 top-0 mx-4 bg-[#20201f] rounded-3xl p-5 border-l-4 border-[#94aaff] cursor-pointer group hover:bg-[#2c2c2c] transition-colors"
+                      onClick={() => onEdit(event)}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="font-['Manrope'] font-bold text-base text-white">{event.title}</h4>
@@ -211,16 +237,35 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
                         <span className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-sm">schedule</span>
                           {format(parseISO(event.startDate), "h:mm a")}
-                          {event.endDate && ` - ${format(parseISO(event.endDate), "h:mm a")}`}
                         </span>
                       </div>
-                      <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={(e) => { e.stopPropagation(); onEdit(event); }} className="text-[#94aaff] text-[10px] font-bold uppercase tracking-wider hover:underline">
-                          Edit
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); onDelete(event.id); }} className="text-[#ff6e84] text-[10px] font-bold uppercase tracking-wider hover:underline">
-                          Delete
-                        </button>
+                    </div>
+                  ))}
+
+                  {/* Tasks */}
+                  {hourTasks.map((task) => (
+                    <div
+                      key={`task-${task.id}`}
+                      className="absolute inset-x-0 top-0 mx-4 bg-[#1a1c24] rounded-3xl p-5 border-l-4 border-[#5cfd80] cursor-pointer group hover:bg-[#242836] transition-colors z-10"
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-['Manrope'] font-bold text-base text-white">{task.title}</h4>
+                        <span className="bg-[rgba(92,253,128,0.1)] text-[#5cfd80] text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                          Task
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[#adaaaa] text-xs">
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">check_circle</span>
+                          {task.dueTime}
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[9px] ${
+                            task.priority === "high" ? "bg-[#ff6e84]/20 text-[#ff6e84]" : 
+                            task.priority === "medium" ? "bg-[#ffbd5c]/20 text-[#ffbd5c]" : 
+                            "bg-[#94aaff]/20 text-[#94aaff]"
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -234,9 +279,10 @@ function DayView({ selectedDate, events, onEdit, onDelete, onSelectDate }: {
   );
 }
 
-function WeekView({ selectedDate, events, onSelectDate }: {
+function WeekView({ selectedDate, events, tasks, onSelectDate }: {
   selectedDate: Date;
   events: CalendarEvent[];
+  tasks: Task[];
   onSelectDate: (d: Date) => void;
 }) {
   const weekStart = startOfWeek(selectedDate);
@@ -257,6 +303,9 @@ function WeekView({ selectedDate, events, onSelectDate }: {
       <div className="grid grid-cols-7 min-h-[300px]">
         {weekDays.map((day) => {
           const dayEvs = events.filter((e) => isSameDay(parseISO(e.startDate), day));
+          const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(parseISO(t.dueDate), day));
+          const allItems = [...dayEvs.map(e => ({ ...e, type: 'event' })), ...dayTasks.map(t => ({ ...t, type: 'task' }))];
+
           return (
             <button
               key={day.toISOString()}
@@ -264,13 +313,20 @@ function WeekView({ selectedDate, events, onSelectDate }: {
               className="p-2 border-r last:border-0 border-[rgba(72,72,71,0.05)] text-left hover:bg-[#1a1a1a] transition-colors align-top"
             >
               <div className="space-y-1">
-                {dayEvs.slice(0, 4).map((ev) => (
-                  <div key={ev.id} className="bg-[rgba(148,170,255,0.15)] text-[#94aaff] text-[9px] font-bold rounded px-1.5 py-0.5 truncate">
-                    {ev.title}
+                {allItems.slice(0, 4).map((item, idx) => (
+                  <div 
+                    key={`${item.type}-${item.id}`} 
+                    className={`text-[9px] font-bold rounded px-1.5 py-0.5 truncate ${
+                      item.type === 'task' 
+                        ? "bg-[rgba(92,253,128,0.15)] text-[#5cfd80]" 
+                        : "bg-[rgba(148,170,255,0.15)] text-[#94aaff]"
+                    }`}
+                  >
+                    {item.title}
                   </div>
                 ))}
-                {dayEvs.length > 4 && (
-                  <div className="text-[9px] text-[#adaaaa]">+{dayEvs.length - 4} more</div>
+                {allItems.length > 4 && (
+                  <div className="text-[9px] text-[#adaaaa]">+{allItems.length - 4} more</div>
                 )}
               </div>
             </button>
@@ -281,10 +337,11 @@ function WeekView({ selectedDate, events, onSelectDate }: {
   );
 }
 
-function MonthView({ currentMonth, selectedDate, events, onSelectDate }: {
+function MonthView({ currentMonth, selectedDate, events, tasks, onSelectDate }: {
   currentMonth: Date;
   selectedDate: Date;
   events: CalendarEvent[];
+  tasks: Task[];
   onSelectDate: (d: Date) => void;
 }) {
   const start = startOfWeek(startOfMonth(currentMonth));
@@ -305,6 +362,9 @@ function MonthView({ currentMonth, selectedDate, events, onSelectDate }: {
           const isSelected = isSameDay(day, selectedDate);
           const isToday = isSameDay(day, new Date());
           const dayEvs = events.filter((e) => isSameDay(parseISO(e.startDate), day));
+          const dayTasks = tasks.filter((t) => t.dueDate && isSameDay(parseISO(t.dueDate), day));
+          const allItems = [...dayEvs.map(e => ({ ...e, type: 'event' })), ...dayTasks.map(t => ({ ...t, type: 'task' }))];
+
           return (
             <button
               key={day.toISOString()}
@@ -319,13 +379,20 @@ function MonthView({ currentMonth, selectedDate, events, onSelectDate }: {
                 {format(day, "d")}
               </span>
               <div className="mt-1 space-y-0.5">
-                {dayEvs.slice(0, 2).map((ev) => (
-                  <div key={ev.id} className="bg-[rgba(148,170,255,0.12)] text-[#94aaff] text-[8px] font-bold rounded px-1 py-0.5 truncate">
-                    {ev.title}
+                {allItems.slice(0, 2).map((item) => (
+                  <div 
+                    key={`${item.type}-${item.id}`} 
+                    className={`text-[8px] font-bold rounded px-1 py-0.5 truncate ${
+                      item.type === 'task'
+                        ? "bg-[rgba(92,253,128,0.12)] text-[#5cfd80]"
+                        : "bg-[rgba(148,170,255,0.12)] text-[#94aaff]"
+                    }`}
+                  >
+                    {item.title}
                   </div>
                 ))}
-                {dayEvs.length > 2 && (
-                  <div className="text-[8px] text-[#adaaaa]">+{dayEvs.length - 2}</div>
+                {allItems.length > 2 && (
+                  <div className="text-[8px] text-[#adaaaa]">+{allItems.length - 2}</div>
                 )}
               </div>
             </button>

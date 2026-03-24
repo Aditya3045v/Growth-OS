@@ -1,0 +1,57 @@
+﻿node : 
+C:\Users\ADITYA PODDA
+R\Downloads\Growth-OS
+\Growth-OS\lib\db\src
+\index.ts:8
+At line:1 char:17
++ ... :PORT=5000; 
+node 
+--enable-source-maps 
+artifacts/api-server/
+dist/index ...
++                 ~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified:     
+(C:\Users\ADITYA...\ 
+   
+src\index.ts:8:Strin 
+   g) [], 
+RemoteExcepti    on
+    + 
+FullyQualifiedErro   
+ rId : 
+NativeCommandE    
+rror
+ 
+  throw new Error(
+        ^
+
+
+Error: DATABASE_URL 
+must be set. Did you 
+forget to provision 
+a database?
+    at <anonymous> 
+(C:\Users\ADITYA PODD
+AR\Downloads\Growth-O
+S\Growth-OS\lib\db\sr
+c\index.ts:8:9)
+    at ModuleJob.run 
+(node:internal/module
+s/esm/module_job:329:
+25)
+    at async onImport
+.tracePromise.__proto
+__ (node:internal/mod
+ules/esm/loader:644:2
+6)
+    at async asyncRun
+EntryPointWithESMLoad
+er (node:internal/mod
+ules/run_main:117:5)
+
+Node.js v22.17.0

@@ -22,18 +22,16 @@ export function CheckInModal() {
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  // Show modal once per day if not checked in
+  // Only show modal if triggered by notification (?action=checkin)
   useEffect(() => {
-    const shown = sessionStorage.getItem("checkin-shown");
-    if (!shown && !todayCheckin?.checkin) {
-      const timer = setTimeout(() => {
-        setOpen(true);
-        sessionStorage.setItem("checkin-shown", "1");
-      }, 2000);
-      return () => clearTimeout(timer);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("action") === "checkin") {
+      setOpen(true);
+      // Clean up URL without refreshing
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
     }
-    return undefined;
-  }, [todayCheckin]);
+  }, []);
 
   const moodToStr = (m: number) => m <= 2 ? "low" : m === 3 ? "neutral" : "happy";
 
@@ -68,7 +66,7 @@ export function CheckInModal() {
             </div>
             <div>
               <h3 className="font-['Manrope'] font-bold text-2xl">Logged!</h3>
-              <p className="text-[#adaaaa] mt-1">Your daily check-in is complete.</p>
+              <p className="text-[#adaaaa] mt-1">Your daily reflection is complete.</p>
             </div>
           </div>
         ) : (
@@ -77,7 +75,7 @@ export function CheckInModal() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#94aaff] font-bold">Daily Ritual</p>
-                <h2 className="font-['Manrope'] font-extrabold text-2xl mt-1">Morning Check-In</h2>
+                <h2 className="font-['Manrope'] font-extrabold text-2xl mt-1">Daily Reflection</h2>
                 <p className="text-[#adaaaa] text-sm mt-1">{format(new Date(), "EEEE, MMMM d")}</p>
               </div>
               <button

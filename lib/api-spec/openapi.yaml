@@ -857,6 +857,7 @@ components:
           format: date-time
         completedAt:
           type: ["string", "null"]
+          format: date-time
       required:
         - id
         - title
