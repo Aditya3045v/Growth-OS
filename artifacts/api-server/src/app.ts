@@ -16,13 +16,13 @@ app.use(
       req(req: Request) {
         return {
           id: (req as any).id,
-          method: req.method,
-          url: req.url?.split("?")[0],
+          method: (req as any).method,
+          url: (req as any).url?.split("?")[0],
         };
       },
       res(res: Response) {
         return {
-          statusCode: res.statusCode,
+          statusCode: (res as any).statusCode,
         };
       },
     },
