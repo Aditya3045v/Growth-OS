@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db, notesTable } from "@workspace/db";
 import {
@@ -11,7 +11,7 @@ import {
   UpdateNoteResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/notes", async (req, res): Promise<void> => {
   const query = ListNotesQueryParams.safeParse(req.query);

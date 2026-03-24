@@ -10,7 +10,7 @@ import statsRouter from "./stats.js";
 import settingsRouter from "./settings.js";
 import notificationsRouter from "./notifications.js";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.use(healthRouter);
 router.use(habitsRouter);

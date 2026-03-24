@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq, ilike, or } from "drizzle-orm";
 import { db, leadsTable } from "@workspace/db";
 import {
@@ -13,7 +13,7 @@ import {
   UpdateLeadResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/leads", async (req, res): Promise<void> => {
   const query = ListLeadsQueryParams.safeParse(req.query);

@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, checkinsTable } from "@workspace/db";
 import type { Checkin } from "@workspace/db";
@@ -9,7 +9,7 @@ import {
   GetTodayCheckinResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 const toCheckin = (c: Checkin) => ({ ...c, date: new Date(c.date), createdAt: new Date(c.createdAt) });
 

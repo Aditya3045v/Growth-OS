@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { sql } from "drizzle-orm";
 import { db, settingsTable } from "@workspace/db";
 import {
@@ -7,7 +7,7 @@ import {
   UpdateSettingsResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 async function getOrCreateSettings() {
   const existing = await db.select().from(settingsTable).limit(1);

@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db, eventsTable } from "@workspace/db";
 import {
@@ -11,7 +11,7 @@ import {
   UpdateEventResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/events", async (req, res): Promise<void> => {
   const query = ListEventsQueryParams.safeParse(req.query);

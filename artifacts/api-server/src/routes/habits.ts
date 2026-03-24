@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db, habitsTable, habitLogsTable } from "@workspace/db";
 import type { HabitLog } from "@workspace/db";
@@ -19,7 +19,7 @@ import {
   GetHabitHistoryResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 const DEFAULT_HABITS = [
   { title: "Speak out loud for 15 minutes", category: "Communication", inputType: "timer", order: 1 },

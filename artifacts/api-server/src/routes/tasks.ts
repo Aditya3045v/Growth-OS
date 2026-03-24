@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq, and, isNull } from "drizzle-orm";
 import { db, tasksTable } from "@workspace/db";
 import {
@@ -13,7 +13,7 @@ import {
   UpdateTaskResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/tasks", async (req, res): Promise<void> => {
   const query = ListTasksQueryParams.safeParse(req.query);
