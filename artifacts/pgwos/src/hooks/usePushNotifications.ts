@@ -96,9 +96,16 @@ export function usePushNotifications() {
       const reg = await navigator.serviceWorker.getRegistration();
       if (reg) {
         const sub = await reg.pushManager.getSubscription();
-        if (sub) await sub.unsubscribe();
+        if (sub) {
+          const endpoint = sub.endpoint;
+          await sub.unsubscribe();
+          await fetch(`${API_BASE}/api/push/unsubscribe`, { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint })
+          });
+        }
       }
-      await fetch(`${API_BASE}/api/push/unsubscribe`, { method: "POST" });
       setIsSubscribed(false);
     } catch (err) {
       console.error("[PGWOS] Push unsubscribe error:", err);
@@ -109,7 +116,15 @@ export function usePushNotifications() {
 
   const sendTest = async (): Promise<void> => {
     try {
-      const res = await fetch(`${API_BASE}/api/push/test`, { method: "POST" });
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sub = await reg?.pushManager.getSubscription();
+      if (!sub) return;
+
+      const res = await fetch(`${API_BASE}/api/push/test`, { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: sub.endpoint })
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         console.warn("[PGWOS] Test push failed:", body);
@@ -123,10 +138,15 @@ export function usePushNotifications() {
     morningEnabled: boolean, morningTime: string, morningMessage: string,
     eveningEnabled: boolean, eveningTime: string, eveningMessage: string
   ): Promise<void> => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = await reg?.pushManager.getSubscription();
+    if (!sub) return;
+
     await fetch(`${API_BASE}/api/push/update-schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
+        endpoint: sub.endpoint,
         morningEnabled, morningTime, morningMessage, 
         eveningEnabled, eveningTime, eveningMessage 
       }),
