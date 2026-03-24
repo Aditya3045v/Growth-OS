@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { sql } from "drizzle-orm";
 import { db, settingsTable } from "@workspace/db";
 import {
@@ -16,12 +16,12 @@ async function getOrCreateSettings() {
   return settings;
 }
 
-router.get("/settings", async (_req, res): Promise<void> => {
+router.get("/settings", async (_req: Request, res: Response): Promise<void> => {
   const settings = await getOrCreateSettings();
   res.json(GetSettingsResponse.parse(settings));
 });
 
-router.patch("/settings", async (req, res): Promise<void> => {
+router.patch("/settings", async (req: Request, res: Response): Promise<void> => {
   const parsed = UpdateSettingsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db, habitsTable, habitLogsTable } from "@workspace/db";
 import type { HabitLog } from "@workspace/db";
@@ -44,12 +44,12 @@ async function seedDefaultHabits() {
 
 seedDefaultHabits().catch(() => {});
 
-router.get("/habits", async (_req, res): Promise<void> => {
+router.get("/habits", async (_req: Request, res: Response): Promise<void> => {
   const habits = await db.select().from(habitsTable).orderBy(habitsTable.order);
   res.json(ListHabitsResponse.parse(habits));
 });
 
-router.post("/habits", async (req, res): Promise<void> => {
+router.post("/habits", async (req: Request, res: Response): Promise<void> => {
   const parsed = CreateHabitBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -59,7 +59,7 @@ router.post("/habits", async (req, res): Promise<void> => {
   res.status(201).json(GetHabitResponse.parse(habit));
 });
 
-router.get("/habits/:id", async (req, res): Promise<void> => {
+router.get("/habits/:id", async (req: Request, res: Response): Promise<void> => {
   const params = GetHabitParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -73,7 +73,7 @@ router.get("/habits/:id", async (req, res): Promise<void> => {
   res.json(GetHabitResponse.parse(habit));
 });
 
-router.patch("/habits/:id", async (req, res): Promise<void> => {
+router.patch("/habits/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateHabitParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -92,7 +92,7 @@ router.patch("/habits/:id", async (req, res): Promise<void> => {
   res.json(UpdateHabitResponse.parse(habit));
 });
 
-router.delete("/habits/:id", async (req, res): Promise<void> => {
+router.delete("/habits/:id", async (req: Request, res: Response): Promise<void> => {
   const params = DeleteHabitParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -106,7 +106,7 @@ router.delete("/habits/:id", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
-router.post("/habits/:id/log", async (req, res): Promise<void> => {
+router.post("/habits/:id/log", async (req: Request, res: Response): Promise<void> => {
   const params = LogHabitParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -149,7 +149,7 @@ router.get("/habit-logs/today", async (_req, res): Promise<void> => {
   res.json(GetTodayHabitLogsResponse.parse(logs.map(toLog)));
 });
 
-router.get("/habit-logs/history", async (req, res): Promise<void> => {
+router.get("/habit-logs/history", async (req: Request, res: Response): Promise<void> => {
   const query = GetHabitHistoryQueryParams.safeParse(req.query);
   const days = query.success && query.data.days ? query.data.days : 30;
 

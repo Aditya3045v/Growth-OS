@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { eq, ilike, or } from "drizzle-orm";
 import { db, leadsTable } from "@workspace/db";
 import {
@@ -15,7 +15,7 @@ import {
 
 const router = Router();
 
-router.get("/leads", async (req, res): Promise<void> => {
+router.get("/leads", async (req: Request, res: Response): Promise<void> => {
   const query = ListLeadsQueryParams.safeParse(req.query);
   let leads = await db.select().from(leadsTable).orderBy(leadsTable.createdAt);
 
@@ -36,7 +36,7 @@ router.get("/leads", async (req, res): Promise<void> => {
   res.json(ListLeadsResponse.parse(leads));
 });
 
-router.post("/leads", async (req, res): Promise<void> => {
+router.post("/leads", async (req: Request, res: Response): Promise<void> => {
   const parsed = CreateLeadBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -46,7 +46,7 @@ router.post("/leads", async (req, res): Promise<void> => {
   res.status(201).json(GetLeadResponse.parse(lead));
 });
 
-router.get("/leads/:id", async (req, res): Promise<void> => {
+router.get("/leads/:id", async (req: Request, res: Response): Promise<void> => {
   const params = GetLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60,7 +60,7 @@ router.get("/leads/:id", async (req, res): Promise<void> => {
   res.json(GetLeadResponse.parse(lead));
 });
 
-router.patch("/leads/:id", async (req, res): Promise<void> => {
+router.patch("/leads/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -79,7 +79,7 @@ router.patch("/leads/:id", async (req, res): Promise<void> => {
   res.json(UpdateLeadResponse.parse(lead));
 });
 
-router.delete("/leads/:id", async (req, res): Promise<void> => {
+router.delete("/leads/:id", async (req: Request, res: Response): Promise<void> => {
   const params = DeleteLeadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

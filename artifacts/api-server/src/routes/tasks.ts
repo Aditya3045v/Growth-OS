@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { eq, and, isNull } from "drizzle-orm";
 import { db, tasksTable } from "@workspace/db";
 import {
@@ -15,7 +15,7 @@ import {
 
 const router = Router();
 
-router.get("/tasks", async (req, res): Promise<void> => {
+router.get("/tasks", async (req: Request, res: Response): Promise<void> => {
   const query = ListTasksQueryParams.safeParse(req.query);
   let tasks = await db.select().from(tasksTable).orderBy(tasksTable.createdAt);
 
@@ -29,7 +29,7 @@ router.get("/tasks", async (req, res): Promise<void> => {
   res.json(ListTasksResponse.parse(tasks));
 });
 
-router.post("/tasks", async (req, res): Promise<void> => {
+router.post("/tasks", async (req: Request, res: Response): Promise<void> => {
   const parsed = CreateTaskBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -39,7 +39,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
   res.status(201).json(GetTaskResponse.parse(task));
 });
 
-router.get("/tasks/:id", async (req, res): Promise<void> => {
+router.get("/tasks/:id", async (req: Request, res: Response): Promise<void> => {
   const params = GetTaskParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -53,7 +53,7 @@ router.get("/tasks/:id", async (req, res): Promise<void> => {
   res.json(GetTaskResponse.parse(task));
 });
 
-router.patch("/tasks/:id", async (req, res): Promise<void> => {
+router.patch("/tasks/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateTaskParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -80,7 +80,7 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
   res.json(UpdateTaskResponse.parse(task));
 });
 
-router.delete("/tasks/:id", async (req, res): Promise<void> => {
+router.delete("/tasks/:id", async (req: Request, res: Response): Promise<void> => {
   const params = DeleteTaskParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
