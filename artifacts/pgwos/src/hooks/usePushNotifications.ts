@@ -76,7 +76,8 @@ export function usePushNotifications() {
         body: JSON.stringify({ 
           subscription, 
           morningEnabled, morningTime, morningMessage, 
-          eveningEnabled, eveningTime, eveningMessage 
+          eveningEnabled, eveningTime, eveningMessage,
+          timezoneOffset: -new Date().getTimezoneOffset()
         }),
       });
 
@@ -148,7 +149,8 @@ export function usePushNotifications() {
       body: JSON.stringify({ 
         endpoint: sub.endpoint,
         morningEnabled, morningTime, morningMessage, 
-        eveningEnabled, eveningTime, eveningMessage 
+        eveningEnabled, eveningTime, eveningMessage,
+        timezoneOffset: -new Date().getTimezoneOffset()
       }),
     });
   };

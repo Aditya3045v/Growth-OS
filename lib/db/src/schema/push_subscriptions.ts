@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -12,6 +12,7 @@ export const pushSubscriptionsTable = pgTable("push_subscriptions", {
   eveningEnabled: boolean("evening_enabled").notNull().default(true),
   eveningTime: text("evening_time").notNull().default("22:00"),
   eveningMessage: text("evening_message").notNull().default("Review your day."),
+  timezoneOffset: integer("timezone_offset").notNull().default(0), // Minutes from UTC
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

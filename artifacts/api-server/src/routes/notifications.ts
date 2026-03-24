@@ -37,7 +37,8 @@ router.post("/push/subscribe", async (req: Request, res: Response): Promise<void
   const { 
     subscription, 
     morningEnabled, morningTime, morningMessage,
-    eveningEnabled, eveningTime, eveningMessage 
+    eveningEnabled, eveningTime, eveningMessage,
+    timezoneOffset
   } = req.body as {
     subscription: any;
     morningEnabled?: boolean;
@@ -46,6 +47,7 @@ router.post("/push/subscribe", async (req: Request, res: Response): Promise<void
     eveningEnabled?: boolean;
     eveningTime?: string;
     eveningMessage?: string;
+    timezoneOffset?: number;
   };
 
   if (!subscription?.endpoint) {
@@ -63,6 +65,7 @@ router.post("/push/subscribe", async (req: Request, res: Response): Promise<void
       eveningEnabled: eveningEnabled ?? true,
       eveningTime: eveningTime ?? "10:00",
       eveningMessage: eveningMessage ?? "Review your progress and plan tomorrow.",
+      timezoneOffset: timezoneOffset ?? 0,
     };
 
     // Upsert subscription
@@ -134,30 +137,34 @@ router.post("/push/update-schedule", async (req: Request, res: Response): Promis
 
 // CRON Endpoint for Vercel / External Scheduler
 router.get("/push/cron", async (_req: Request, res: Response): Promise<void> => {
-  // Use a simple secret to protect the cron endpoint if needed, but for now we'll just implement logic
-  const now = new Date();
+  const now = new Date(); // Server Time (UTC in Vercel)
   
-  // Format as HH:mm in local time (or UTC if server is UTC)
-  // Vercel servers are usually UTC, so we might need to handle offsets or just assume UTC for now.
-  // Ideally we store user timezone, but HH:mm is a good start.
-  const hours = String(now.getHours()).padStart(2, '0');
-  const mins = String(now.getMinutes()).padStart(2, '0');
-  const currentTime = `${hours}:${mins}`;
+  console.log(`[PGWOS-CRON] Processing notifications at ${now.toISOString()}`);
 
-  console.log(`[PGWOS-CRON] Checking for notifications at ${currentTime}`);
-
-  const activeSubs = await db.select().from(pushSubscriptionsTable).where(
+  // We fetch ALL active subscriptions and then filter in memory for simplicity 
+  // (or we could use complex SQL with intervals, but memory is fine for current scale)
+  const allSubs = await db.select().from(pushSubscriptionsTable).where(
     or(
-      and(eq(pushSubscriptionsTable.morningEnabled, true), eq(pushSubscriptionsTable.morningTime, currentTime)),
-      and(eq(pushSubscriptionsTable.eveningEnabled, true), eq(pushSubscriptionsTable.eveningTime, currentTime))
+      eq(pushSubscriptionsTable.morningEnabled, true),
+      eq(pushSubscriptionsTable.eveningEnabled, true)
     )
   );
 
-  for (const sub of activeSubs) {
+  let processedCount = 0;
+
+  for (const sub of allSubs) {
+    // Calculate User Local Time
+    // sub.timezoneOffset is minutes from UTC (e.g. 330 for IST)
+    const userLocalTime = new Date(now.getTime() + (sub.timezoneOffset || 0) * 60000);
+    const hours = String(userLocalTime.getUTCHours()).padStart(2, '0');
+    const mins = String(userLocalTime.getUTCMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${mins}`;
+
     const isMorning = sub.morningEnabled && sub.morningTime === currentTime;
     const isEvening = sub.eveningEnabled && sub.eveningTime === currentTime;
 
     if (isMorning) {
+      processedCount++;
       await sendPushToSubscription(sub.subscription, {
         title: "Good Morning! 🌅",
         body: sub.morningMessage || "Time for your daily check-in.",
@@ -167,6 +174,7 @@ router.get("/push/cron", async (_req: Request, res: Response): Promise<void> => 
     }
 
     if (isEvening) {
+      processedCount++;
       await sendPushToSubscription(sub.subscription, {
         title: "Evening Reflection 🌙",
         body: sub.eveningMessage || "Review your day.",
@@ -177,7 +185,7 @@ router.get("/push/cron", async (_req: Request, res: Response): Promise<void> => 
     }
   }
 
-  res.json({ processed: activeSubs.length });
+  res.json({ processed: processedCount, scanned: allSubs.length });
 });
 
 // Local Development Only: Trigger the cron logic every minute automatically
