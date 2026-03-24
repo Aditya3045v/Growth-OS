@@ -193,5 +193,3 @@ router.post("/push/update-schedule", (req: Request, res: Response): void => {
 });
 
 export default router;
-
-export default router;
