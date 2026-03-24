@@ -1,12 +1,12 @@
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Application, type Request, type Response } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
-const app: Express = express();
+const app: Application = express();
 
-// @ts-ignore - pino-http ESM/CJS interop can be tricky in some TS versions
+// @ts-ignore - pino-http ESM/CJS interop handling
 const pino = (pinoHttp as any).default || pinoHttp;
 
 app.use(
