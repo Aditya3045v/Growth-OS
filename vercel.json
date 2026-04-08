@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "artifacts/pgwos/dist/public",
   "crons": [
     {
       "path": "/api/push/cron",
@@ -13,7 +15,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/artifacts/pgwos/dist/public/$1"
+      "destination": "/index.html"
     }
   ]
 }
