@@ -1,4 +1,4 @@
-// Import from pre-built esbuild output via the source file (transpiled at runtime by Vercel)
-// We use .js to avoid Vercel's independent TypeScript pass which conflicts with Express types
-import app from "../artifacts/api-server/src/app.ts";
+// Import from the pre-built esbuild output (pure JS, no TypeScript)
+// This avoids all Vercel TypeScript compilation conflicts
+import app from "../artifacts/api-server/dist/app.mjs";
 export default app;
