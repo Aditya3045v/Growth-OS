@@ -10,6 +10,7 @@ export const habitsTable = pgTable("habits", {
   isDefault: boolean("is_default").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   order: integer("order").notNull().default(0),
+  deadline: timestamp("deadline", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

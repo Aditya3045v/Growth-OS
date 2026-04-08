@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { useListHabits, useGetTodayHabitLogs, useLogHabit, useCreateHabit, useDeleteHabit } from "@workspace/api-client-react";
+import {
+  useListHabits,
+  useGetTodayHabitLogs,
+  useLogHabit,
+  useCreateHabit,
+  useDeleteHabit,
+  useGetSettings,
+  useUpdateSettings,
+  useUpdateHabit,
+} from "@workspace/api-client-react";
 import type { Habit, HabitLog } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -31,13 +40,26 @@ const CATEGORY_COLORS: Record<string, string> = {
 export default function Habits() {
   const { data: habits, isLoading } = useListHabits();
   const { data: logs } = useGetTodayHabitLogs();
+  const { data: settings } = useGetSettings();
+  const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const categories = habits ? Array.from(new Set(habits.map((h) => h.category.toLowerCase()))) : [];
 
   const completedCount = logs?.filter((l) => l.completed).length || 0;
   const totalCount = habits?.length || 0;
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  // Handle click on Wise Video card
+  const handleWiseVideoClick = () => {
+    const url = settings?.wiseVideoUrl;
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      setShowVideoModal(true);
+    }
+  };
 
   return (
     <div className="py-6 space-y-6">
@@ -62,6 +84,33 @@ export default function Habits() {
           </p>
         </div>
       </div>
+
+      {/* Today's Wise Video Card */}
+      <button
+        onClick={handleWiseVideoClick}
+        className="w-full relative overflow-hidden bg-[#131313] p-5 rounded-2xl ds-ghost-border flex items-center gap-4 text-left hover:bg-[#1a1a1a] active:scale-[0.98] transition-all group border-l-4 border-[#ffbd5c]"
+      >
+        <div className="w-12 h-12 rounded-xl bg-[rgba(255,189,92,0.1)] flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-[#ffbd5c] text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#adaaaa] font-bold mb-0.5">Daily Wisdom</p>
+          <p className="font-['Manrope'] font-bold text-lg text-white leading-tight">
+            {settings?.wiseVideoUrl ? "Today's Wise Video" : "Set Today's Wise Video"}
+          </p>
+          <p className="text-[#adaaaa] text-xs mt-0.5 truncate">
+            {settings?.wiseVideoUrl || "Tap to add a YouTube/IG video link"}
+          </p>
+        </div>
+        <span className="material-symbols-outlined text-[#adaaaa] group-hover:text-[#ffbd5c] transition-colors shrink-0">arrow_outward</span>
+        {/* Edit icon */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowVideoModal(true); }}
+          className="absolute top-3 right-3 p-1.5 rounded-lg text-[#adaaaa] hover:text-[#ffbd5c] hover:bg-[rgba(255,189,92,0.1)] transition-all opacity-0 group-hover:opacity-100"
+        >
+          <span className="material-symbols-outlined text-sm">edit</span>
+        </button>
+      </button>
 
       {/* Habits by category */}
       {isLoading ? (
@@ -98,6 +147,16 @@ export default function Habits() {
       </button>
 
       {showAdd && <AddHabitModal onClose={() => setShowAdd(false)} />}
+      {showVideoModal && (
+        <WiseVideoModal
+          currentUrl={settings?.wiseVideoUrl || ""}
+          onClose={() => setShowVideoModal(false)}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+            setShowVideoModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -128,6 +187,7 @@ function HabitItem({ habit, log, color }: { habit: Habit; log: HabitLog | undefi
   const logMutation = useLogHabit();
   const deleteHabit = useDeleteHabit();
   const queryClient = useQueryClient();
+  const [showCountdown, setShowCountdown] = useState(false);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/habit-logs/today"] });
@@ -153,56 +213,111 @@ function HabitItem({ habit, log, color }: { habit: Habit; log: HabitLog | undefi
     }
   };
 
-  return (
-    <div className={`flex items-center justify-between p-4 rounded-xl transition-colors group border ${isCompleted ? "bg-[rgba(92,253,128,0.05)] border-[rgba(92,253,128,0.1)]" : "bg-[#1a1a1a] border-[rgba(72,72,71,0.1)] hover:bg-[#2c2c2c]"}`}>
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div
-          className="w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 cursor-pointer transition-all"
-          style={{
-            borderColor: isCompleted ? "#5cfd80" : "#484847",
-            backgroundColor: isCompleted ? "rgba(92,253,128,0.1)" : "transparent",
-          }}
-          onClick={() => (isCompleted ? undo() : habit.inputType === "checkbox" && complete())}
-        >
-          {isCompleted && <span className="material-symbols-outlined text-[#5cfd80] text-sm">check</span>}
-        </div>
-        <span className={`font-medium text-sm truncate ${isCompleted ? "line-through text-[#adaaaa]" : "text-white"}`}>
-          {habit.title}
-        </span>
-      </div>
+  // Parse countdown from deadline
+  const deadline = habit.deadline ? new Date(habit.deadline) : null;
+  const hasDeadline = !!deadline && !isNaN(deadline.getTime());
 
-      <div className="flex items-center gap-2 shrink-0">
-        {!isCompleted && habit.inputType === "timer" && (
-          <TimerControl color={color} onComplete={(dur) => complete(undefined, dur)} />
-        )}
-        {!isCompleted && habit.inputType === "number" && (
-          <NumberControl color={color} onComplete={(val) => complete(val)} />
-        )}
-        {!isCompleted && (habit.inputType === "notes" || habit.inputType === "text") && (
-          <NotesControl onComplete={(val) => complete(val)} />
-        )}
-        {isCompleted && (
-          <div className="flex items-center gap-2 bg-[rgba(92,253,128,0.1)] px-3 py-1 rounded-full border border-[rgba(92,253,128,0.2)]">
-            <span className="material-symbols-outlined text-[#5cfd80] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
-            {log?.durationSeconds ? (
-              <span className="text-[#5cfd80] font-mono text-sm font-bold">
-                {String(Math.floor(log.durationSeconds / 60)).padStart(2, "0")}:{String(log.durationSeconds % 60).padStart(2, "0")}
-              </span>
-            ) : log?.value ? (
-              <span className="text-[#5cfd80] text-sm font-bold">{log.value}</span>
-            ) : (
-              <span className="text-[#5cfd80] text-sm font-bold">Done</span>
+  return (
+    <div className={`rounded-xl transition-colors border ${isCompleted ? "bg-[rgba(92,253,128,0.05)] border-[rgba(92,253,128,0.1)]" : "bg-[#1a1a1a] border-[rgba(72,72,71,0.1)] hover:bg-[#2c2c2c]"}`}>
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div
+            className="w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 cursor-pointer transition-all"
+            style={{
+              borderColor: isCompleted ? "#5cfd80" : "#484847",
+              backgroundColor: isCompleted ? "rgba(92,253,128,0.1)" : "transparent",
+            }}
+            onClick={() => (isCompleted ? undo() : habit.inputType === "checkbox" && complete())}
+          >
+            {isCompleted && <span className="material-symbols-outlined text-[#5cfd80] text-sm">check</span>}
+          </div>
+          <div className="min-w-0">
+            <span className={`font-medium text-sm truncate block ${isCompleted ? "line-through text-[#adaaaa]" : "text-white"}`}>
+              {habit.title}
+            </span>
+            {hasDeadline && (
+              <CountdownBadge deadline={deadline!} />
             )}
           </div>
-        )}
-        {!habit.isDefault && (
-          <button onClick={remove} className="opacity-0 group-hover:opacity-100 p-1 rounded text-[#adaaaa] hover:text-[#ff6e84] transition-all">
-            <span className="material-symbols-outlined text-[16px]">delete</span>
-          </button>
-        )}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {!isCompleted && habit.inputType === "timer" && (
+            <TimerControl color={color} onComplete={(dur) => complete(undefined, dur)} />
+          )}
+          {!isCompleted && habit.inputType === "number" && (
+            <NumberControl color={color} onComplete={(val) => complete(val)} />
+          )}
+          {!isCompleted && (habit.inputType === "notes" || habit.inputType === "text") && (
+            <NotesControl onComplete={(val) => complete(val)} />
+          )}
+          {isCompleted && (
+            <div className="flex items-center gap-2 bg-[rgba(92,253,128,0.1)] px-3 py-1 rounded-full border border-[rgba(92,253,128,0.2)]">
+              <span className="material-symbols-outlined text-[#5cfd80] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+              {log?.durationSeconds ? (
+                <span className="text-[#5cfd80] font-mono text-sm font-bold">
+                  {String(Math.floor(log.durationSeconds / 60)).padStart(2, "0")}:{String(log.durationSeconds % 60).padStart(2, "0")}
+                </span>
+              ) : log?.value ? (
+                <span className="text-[#5cfd80] text-sm font-bold">{log.value}</span>
+              ) : (
+                <span className="text-[#5cfd80] text-sm font-bold">Done</span>
+              )}
+            </div>
+          )}
+          {/* Delete button — always visible on mobile, hover on desktop for custom habits */}
+          {!habit.isDefault && (
+            <button
+              onClick={remove}
+              className="p-2 rounded-xl text-[#adaaaa] hover:text-[#ff6e84] hover:bg-[rgba(255,110,132,0.1)] transition-all active:scale-95 ml-1"
+              aria-label="Delete habit"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+// Live countdown display badge
+function CountdownBadge({ deadline }: { deadline: Date }) {
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft(deadline));
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLeft(getTimeLeft(deadline)), 1000);
+    return () => clearInterval(id);
+  }, [deadline]);
+
+  if (timeLeft.expired) {
+    return (
+      <span className="text-[10px] text-[#ff6e84] font-bold uppercase tracking-wider mt-0.5">
+        ⚠ Overdue
+      </span>
+    );
+  }
+
+  const color = timeLeft.d === 0 && timeLeft.h < 3 ? "#ff6e84" : timeLeft.d === 0 ? "#ffbd5c" : "#94aaff";
+  const label = timeLeft.d > 0
+    ? `${timeLeft.d}d ${timeLeft.h}h left`
+    : `${timeLeft.h}h ${timeLeft.m}m ${timeLeft.s}s`;
+
+  return (
+    <span className="text-[10px] font-mono font-bold mt-0.5" style={{ color }}>
+      ⏱ {label}
+    </span>
+  );
+}
+
+function getTimeLeft(deadline: Date) {
+  const diff = deadline.getTime() - Date.now();
+  if (diff <= 0) return { expired: true, d: 0, h: 0, m: 0, s: 0 };
+  const s = Math.floor(diff / 1000) % 60;
+  const m = Math.floor(diff / 60000) % 60;
+  const h = Math.floor(diff / 3600000) % 24;
+  const d = Math.floor(diff / 86400000);
+  return { expired: false, d, h, m, s };
 }
 
 function TimerControl({ color, onComplete }: { color: string; onComplete: (dur: number) => void }) {
@@ -308,15 +423,18 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
   const createHabit = useCreateHabit();
   const queryClient = useQueryClient();
   const [inputType, setInputType] = useState("checkbox");
+  const [hasDeadline, setHasDeadline] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const deadlineVal = fd.get("deadline") as string;
     createHabit.mutate({
       data: {
         title: fd.get("title") as string,
         category: fd.get("category") as string,
         inputType,
+        deadline: hasDeadline && deadlineVal ? new Date(deadlineVal).toISOString() : null,
       }
     }, {
       onSuccess: () => {
@@ -362,7 +480,7 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
               defaultValue="personal"
               className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#94aaff]"
             >
-              <option value="health">Health & Fitness</option>
+              <option value="health">Health &amp; Fitness</option>
               <option value="business">Business</option>
               <option value="personal">Personal Growth</option>
               <option value="mind">Mindfulness</option>
@@ -392,6 +510,31 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
+          {/* Deadline / Countdown Timer */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-['Inter'] uppercase tracking-widest text-[#adaaaa] font-bold">Countdown Timer (Deadline)</label>
+              <button
+                type="button"
+                onClick={() => setHasDeadline(!hasDeadline)}
+                className={`w-10 h-5 rounded-full transition-colors ${hasDeadline ? "bg-[#ffbd5c]" : "bg-[#262626]"}`}
+              >
+                <div className={`w-4 h-4 bg-white rounded-full mx-0.5 transition-transform ${hasDeadline ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
+            </div>
+            {hasDeadline && (
+              <input
+                type="datetime-local"
+                name="deadline"
+                required={hasDeadline}
+                className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#ffbd5c] [color-scheme:dark]"
+              />
+            )}
+            {hasDeadline && (
+              <p className="text-[10px] text-[#adaaaa]">A countdown will show under this habit until the deadline.</p>
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={createHabit.isPending}
@@ -400,6 +543,59 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
             {createHabit.isPending ? "Creating..." : "Create Habit"}
           </button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function WiseVideoModal({ currentUrl, onClose, onSaved }: { currentUrl: string; onClose: () => void; onSaved: () => void }) {
+  const updateSettings = useUpdateSettings();
+  const [url, setUrl] = useState(currentUrl);
+
+  const handleSave = () => {
+    updateSettings.mutate({ data: { wiseVideoUrl: url.trim() || null } }, {
+      onSuccess: onSaved,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#000]/70 backdrop-blur-sm p-4">
+      <div className="bg-[#131313] w-full max-w-md rounded-3xl p-6 space-y-5 ds-ghost-border">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-[10px] font-['Inter'] uppercase tracking-widest text-[#adaaaa] font-bold mb-0.5">Daily Wisdom</p>
+            <h3 className="font-['Manrope'] font-bold text-xl">Today's Wise Video</h3>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-full text-[#adaaaa] hover:bg-[#2c2c2c]">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] font-['Inter'] uppercase tracking-widest text-[#adaaaa] font-bold">Video URL</label>
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            autoFocus
+            className="w-full bg-[#262626] border-none rounded-xl py-3.5 px-4 text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#ffbd5c]"
+            placeholder="https://youtube.com/watch?v=... or Instagram reel URL"
+          />
+          <p className="text-[10px] text-[#adaaaa]">Paste any YouTube, Instagram Reels, or Shorts link. Tapping the card will open it directly.</p>
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-[#adaaaa] bg-[#1a1a1a] font-bold">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateSettings.isPending}
+            className="flex-1 ds-liquid-gradient py-3.5 rounded-2xl font-['Manrope'] font-extrabold text-[#000] ds-inner-glow active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            {updateSettings.isPending ? "Saving..." : "Save Link"}
+          </button>
+        </div>
       </div>
     </div>
   );

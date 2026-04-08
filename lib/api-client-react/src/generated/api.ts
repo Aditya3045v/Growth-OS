@@ -24,6 +24,7 @@ import type {
   CreateCheckinBody,
   CreateEventBody,
   CreateHabitBody,
+  CreateIdeaBody,
   CreateLeadBody,
   CreateNoteBody,
   CreateTaskBody,
@@ -34,6 +35,7 @@ import type {
   HabitDaySummary,
   HabitLog,
   HealthStatus,
+  Idea,
   Lead,
   ListCheckinsParams,
   ListEventsParams,
@@ -47,6 +49,7 @@ import type {
   Task,
   UpdateEventBody,
   UpdateHabitBody,
+  UpdateIdeaBody,
   UpdateLeadBody,
   UpdateNoteBody,
   UpdateSettingsBody,
@@ -3013,3 +3016,135 @@ export const useUpdateSettings = <
 > => {
   return useMutation(getUpdateSettingsMutationOptions(options));
 };
+
+// ── Ideas (Idea Vault) ────────────────────────────────────────────
+
+
+export const getListIdeasUrl = () => `/api/ideas`;
+
+export const listIdeas = async (options?: RequestInit): Promise<Idea[]> =>
+  customFetch<Idea[]>(getListIdeasUrl(), { ...options, method: "GET" });
+
+export const getListIdeasQueryKey = () => [`/api/ideas`] as const;
+
+export const getListIdeasQueryOptions = <
+  TData = Awaited<ReturnType<typeof listIdeas>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listIdeas>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getListIdeasQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listIdeas>>> = ({ signal }) =>
+    listIdeas({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listIdeas>>, TError, TData
+  > & { queryKey: QueryKey };
+};
+
+export function useListIdeas<
+  TData = Awaited<ReturnType<typeof listIdeas>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listIdeas>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListIdeasQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const createIdea = async (body: CreateIdeaBody, options?: RequestInit): Promise<Idea> =>
+  customFetch<Idea>(getListIdeasUrl(), {
+    ...options, method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(body),
+  });
+
+export const getCreateIdeaMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createIdea>>, TError, { data: BodyType<CreateIdeaBody> }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationOptions<Awaited<ReturnType<typeof createIdea>>, TError, { data: BodyType<CreateIdeaBody> }, TContext> => {
+  const mutationKey = ["createIdea"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createIdea>>, { data: BodyType<CreateIdeaBody> }> =
+    (props) => createIdea(props.data, requestOptions);
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useCreateIdea = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createIdea>>, TError, { data: BodyType<CreateIdeaBody> }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationResult<Awaited<ReturnType<typeof createIdea>>, TError, { data: BodyType<CreateIdeaBody> }, TContext> =>
+  useMutation(getCreateIdeaMutationOptions(options));
+
+export const getUpdateIdeaUrl = (id: number) => `/api/ideas/${id}`;
+
+export const updateIdea = async (id: number, body: UpdateIdeaBody, options?: RequestInit): Promise<Idea> =>
+  customFetch<Idea>(getUpdateIdeaUrl(id), {
+    ...options, method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(body),
+  });
+
+export const getUpdateIdeaMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateIdea>>, TError, { id: number; data: BodyType<UpdateIdeaBody> }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationOptions<Awaited<ReturnType<typeof updateIdea>>, TError, { id: number; data: BodyType<UpdateIdeaBody> }, TContext> => {
+  const mutationKey = ["updateIdea"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateIdea>>, { id: number; data: BodyType<UpdateIdeaBody> }> =
+    (props) => updateIdea(props.id, props.data, requestOptions);
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useUpdateIdea = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateIdea>>, TError, { id: number; data: BodyType<UpdateIdeaBody> }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationResult<Awaited<ReturnType<typeof updateIdea>>, TError, { id: number; data: BodyType<UpdateIdeaBody> }, TContext> =>
+  useMutation(getUpdateIdeaMutationOptions(options));
+
+export const getDeleteIdeaUrl = (id: number) => `/api/ideas/${id}`;
+
+export const deleteIdea = async (id: number, options?: RequestInit): Promise<void> =>
+  customFetch<void>(getDeleteIdeaUrl(id), { ...options, method: "DELETE" });
+
+export const getDeleteIdeaMutationOptions = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteIdea>>, TError, { id: number }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteIdea>>, TError, { id: number }, TContext> => {
+  const mutationKey = ["deleteIdea"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteIdea>>, { id: number }> =
+    (props) => deleteIdea(props.id, requestOptions);
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useDeleteIdea = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteIdea>>, TError, { id: number }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+  }
+): UseMutationResult<Awaited<ReturnType<typeof deleteIdea>>, TError, { id: number }, TContext> =>
+  useMutation(getDeleteIdeaMutationOptions(options));
+

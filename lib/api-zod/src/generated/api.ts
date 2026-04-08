@@ -21,10 +21,11 @@ export const ListHabitsResponseItem = zod.object({
   id: zod.number(),
   title: zod.string(),
   category: zod.string(),
-  inputType: zod.string().describe("checkbox | timer | number | notes | text"),
+  inputType: zod.string().describe("checkbox | timer | number | notes | text | countdown"),
   isDefault: zod.boolean(),
   isActive: zod.boolean(),
   order: zod.number(),
+  deadline: zod.date().nullable().optional(),
   createdAt: zod.date(),
 });
 export const ListHabitsResponse = zod.array(ListHabitsResponseItem);
@@ -37,6 +38,7 @@ export const CreateHabitBody = zod.object({
   category: zod.string(),
   inputType: zod.string(),
   order: zod.number().optional(),
+  deadline: zod.string().nullish(),
 });
 
 /**
@@ -50,10 +52,11 @@ export const GetHabitResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
   category: zod.string(),
-  inputType: zod.string().describe("checkbox | timer | number | notes | text"),
+  inputType: zod.string().describe("checkbox | timer | number | notes | text | countdown"),
   isDefault: zod.boolean(),
   isActive: zod.boolean(),
   order: zod.number(),
+  deadline: zod.date().nullable().optional(),
   createdAt: zod.date(),
 });
 
@@ -70,16 +73,18 @@ export const UpdateHabitBody = zod.object({
   inputType: zod.string().optional(),
   isActive: zod.boolean().optional(),
   order: zod.number().optional(),
+  deadline: zod.string().nullish(),
 });
 
 export const UpdateHabitResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
   category: zod.string(),
-  inputType: zod.string().describe("checkbox | timer | number | notes | text"),
+  inputType: zod.string().describe("checkbox | timer | number | notes | text | countdown"),
   isDefault: zod.boolean(),
   isActive: zod.boolean(),
   order: zod.number(),
+  deadline: zod.date().nullable().optional(),
   createdAt: zod.date(),
 });
 
@@ -604,6 +609,9 @@ export const GetSettingsResponse = zod.object({
   morningReminderTime: zod.string(),
   afternoonReminderTime: zod.string(),
   eveningReminderTime: zod.string(),
+  wiseVideoUrl: zod.string().nullable().optional(),
+  hourlyQuotesEnabled: zod.boolean().optional(),
+  taskReminderEnabled: zod.boolean().optional(),
   createdAt: zod.date(),
 });
 
@@ -619,6 +627,9 @@ export const UpdateSettingsBody = zod.object({
   morningReminderTime: zod.string().optional(),
   afternoonReminderTime: zod.string().optional(),
   eveningReminderTime: zod.string().optional(),
+  wiseVideoUrl: zod.string().nullish(),
+  hourlyQuotesEnabled: zod.boolean().optional(),
+  taskReminderEnabled: zod.boolean().optional(),
 });
 
 export const UpdateSettingsResponse = zod.object({
@@ -631,5 +642,49 @@ export const UpdateSettingsResponse = zod.object({
   morningReminderTime: zod.string(),
   afternoonReminderTime: zod.string(),
   eveningReminderTime: zod.string(),
+  wiseVideoUrl: zod.string().nullable().optional(),
+  hourlyQuotesEnabled: zod.boolean().optional(),
+  taskReminderEnabled: zod.boolean().optional(),
   createdAt: zod.date(),
+});
+
+// ── Ideas (Idea Vault) ────────────────────────────────────────────
+
+export const ListIdeasResponseItem = zod.object({
+  id: zod.number(),
+  text: zod.string(),
+  done: zod.boolean(),
+  createdAt: zod.date(),
+});
+export const ListIdeasResponse = zod.array(ListIdeasResponseItem);
+
+export const CreateIdeaBody = zod.object({
+  text: zod.string(),
+});
+
+export const GetIdeaResponse = zod.object({
+  id: zod.number(),
+  text: zod.string(),
+  done: zod.boolean(),
+  createdAt: zod.date(),
+});
+
+export const UpdateIdeaParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateIdeaBody = zod.object({
+  text: zod.string().optional(),
+  done: zod.boolean().optional(),
+});
+
+export const UpdateIdeaResponse = zod.object({
+  id: zod.number(),
+  text: zod.string(),
+  done: zod.boolean(),
+  createdAt: zod.date(),
+});
+
+export const DeleteIdeaParams = zod.object({
+  id: zod.coerce.number(),
 });

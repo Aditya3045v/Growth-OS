@@ -9,6 +9,7 @@ import checkinsRouter from "./checkins.js";
 import statsRouter from "./stats.js";
 import settingsRouter from "./settings.js";
 import notificationsRouter from "./notifications.js";
+import ideasRouter from "./ideas.js";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use(checkinsRouter);
 router.use(statsRouter);
 router.use(settingsRouter);
 router.use(notificationsRouter);
+router.use(ideasRouter);
 
 export default router;

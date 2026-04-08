@@ -12,6 +12,9 @@ export const settingsTable = pgTable("settings", {
   morningReminderTime: text("morning_reminder_time").notNull().default("08:00"),
   afternoonReminderTime: text("afternoon_reminder_time").notNull().default("14:00"),
   eveningReminderTime: text("evening_reminder_time").notNull().default("20:00"),
+  wiseVideoUrl: text("wise_video_url"),
+  hourlyQuotesEnabled: boolean("hourly_quotes_enabled").notNull().default(false),
+  taskReminderEnabled: boolean("task_reminder_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
