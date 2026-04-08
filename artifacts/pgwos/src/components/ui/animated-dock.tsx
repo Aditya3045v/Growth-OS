@@ -26,20 +26,39 @@ export interface AnimatedDockProps {
 
 export const AnimatedDock = ({ className, items }: AnimatedDockProps) => {
   const mouseX = useMotionValue(Infinity);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
-    <motion.div
-      onMouseMove={(e) => mouseX.set(e.pageX)}
-      onMouseLeave={() => mouseX.set(Infinity)}
+    <div
       className={cn(
-        "flex items-end gap-3 rounded-2xl px-4 pb-3 pt-2",
+        "relative flex items-end rounded-2xl overflow-hidden",
         className
       )}
     >
-      {items.map((item) => (
-        <DockItem key={item.href} mouseX={mouseX} item={item} />
-      ))}
-    </motion.div>
+      {/* Scrollable track — handles touch on mobile */}
+      <div
+        ref={scrollRef}
+        className="flex items-end gap-3 px-4 pb-3 pt-2 overflow-x-auto hide-scrollbar"
+        style={{
+          WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
+          scrollSnapType: "x proximity",
+          /* let browser handle horizontal swipe natively */
+          touchAction: "pan-x",
+          cursor: "grab",
+        }}
+      >
+        {/* Desktop hover detection layer — invisible, pointer events only on desktop */}
+        <motion.div
+          onMouseMove={(e) => mouseX.set(e.pageX)}
+          onMouseLeave={() => mouseX.set(Infinity)}
+          className="absolute inset-0 pointer-events-none md:pointer-events-auto"
+        />
+
+        {items.map((item) => (
+          <DockItem key={item.href} mouseX={mouseX} item={item} />
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -58,7 +77,6 @@ const DockItem = ({ mouseX, item }: DockItemProps) => {
     return val - bounds.x - bounds.width / 2;
   });
 
-  // Larger range for desktop hover effect; no-op on mobile (mouseX=Infinity)
   const widthSync = useTransform(distance, [-160, 0, 160], [44, 68, 44]);
   const width = useSpring(widthSync, { mass: 0.1, stiffness: 170, damping: 14 });
 
@@ -72,11 +90,12 @@ const DockItem = ({ mouseX, item }: DockItemProps) => {
         style={{ width }}
         title={item.label}
         className={cn(
-          "aspect-square flex items-center justify-center rounded-full cursor-pointer select-none",
+          "aspect-square flex-shrink-0 flex items-center justify-center rounded-full cursor-pointer select-none",
           "transition-shadow duration-200",
+          "scroll-snap-align-center",
           isActive
             ? "bg-gradient-to-br from-[#94aaff] to-[#809bff] shadow-[0_4px_24px_rgba(148,170,255,0.35)]"
-            : "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(148,170,255,0.12)]"
+            : "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(148,170,255,0.12)] active:bg-[rgba(148,170,255,0.18)]"
         )}
       >
         <motion.div

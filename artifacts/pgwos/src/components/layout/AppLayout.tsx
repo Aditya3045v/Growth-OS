@@ -4,12 +4,12 @@ import { useGetStreak, useGetSettings } from "@workspace/api-client-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { AnimatedDock } from "@/components/ui/animated-dock";
 
-const MSIcon = ({ name, filled = false }: { name: string; filled?: boolean }) => (
+const MSIcon = ({ name }: { name: string }) => (
   <span
     className="material-symbols-outlined"
     style={{
       fontSize: 22,
-      fontVariationSettings: filled ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+      fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
     }}
   >
     {name}
@@ -88,15 +88,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* Animated Dock */}
+      {/* Animated Dock — full width for edge-to-edge scroll on mobile */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[max(16px,env(safe-area-inset-bottom,16px))] pt-3 bg-[#0e0e0e]/60 backdrop-blur-2xl"
+        className="fixed bottom-0 left-0 right-0 z-50 pb-[max(16px,env(safe-area-inset-bottom,16px))] pt-2 bg-[#0e0e0e]/70 backdrop-blur-2xl"
         style={{ borderTop: "1px solid rgba(72,72,71,0.12)" }}
       >
-        <AnimatedDock
-          items={NAV_ITEMS}
-          className="bg-[rgba(19,19,19,0.85)] border border-[rgba(72,72,71,0.2)] shadow-[0_-4px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl"
-        />
+        <AnimatedDock items={NAV_ITEMS} className="w-full" />
       </div>
     </div>
   );
