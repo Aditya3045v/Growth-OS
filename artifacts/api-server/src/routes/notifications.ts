@@ -1,4 +1,4 @@
-import { Router, any, any } from "express";
+import { Router } from "express";
 import webpush from "web-push";
 import { db, pushSubscriptionsTable } from "@workspace/db";
 import { eq, or, and } from "drizzle-orm";
