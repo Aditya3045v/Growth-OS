@@ -1,7 +1,7 @@
 // Import from the pre-built esbuild output (pure JS, no TypeScript)
 // This avoids all Vercel TypeScript compilation conflicts
-import app from "../artifacts/api-server/dist/app.mjs";
+const app = require("../artifacts/api-server/dist/app.cjs").default;
 
-console.log("Vercel Serverless Function Booting Up with dynamic dist dependency...");
+console.log("Vercel Serverless Function Booting Up with CJS dist dependency...");
 
-export default app;
+module.exports = app;
