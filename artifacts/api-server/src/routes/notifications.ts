@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, any, any } from "express";
 import webpush from "web-push";
 import { db, pushSubscriptionsTable } from "@workspace/db";
 import { eq, or, and } from "drizzle-orm";
@@ -29,11 +29,11 @@ async function sendPushToSubscription(subscription: any, payload: object) {
   }
 }
 
-router.get("/vapid-public-key", (_req: Request, res: Response): void => {
+router.get("/vapid-public-key", (_req: any, res: any): void => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || "" });
 });
 
-router.post("/push/subscribe", async (req: Request, res: Response): Promise<void> => {
+router.post("/push/subscribe", async (req: any, res: any): Promise<void> => {
   const { 
     subscription, 
     morningEnabled, morningTime, morningMessage,
@@ -89,7 +89,7 @@ router.post("/push/subscribe", async (req: Request, res: Response): Promise<void
   }
 });
 
-router.post("/push/unsubscribe", async (req: Request, res: Response): Promise<void> => {
+router.post("/push/unsubscribe", async (req: any, res: any): Promise<void> => {
   const { endpoint } = req.body as { endpoint: string };
   if (endpoint) {
     await db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, endpoint));
@@ -97,7 +97,7 @@ router.post("/push/unsubscribe", async (req: Request, res: Response): Promise<vo
   res.json({ ok: true });
 });
 
-router.post("/push/test", async (req: Request, res: Response): Promise<void> => {
+router.post("/push/test", async (req: any, res: any): Promise<void> => {
   const { endpoint } = req.body as { endpoint: string };
   const sub = await db.query.pushSubscriptionsTable.findFirst({
     where: eq(pushSubscriptionsTable.endpoint, endpoint)
@@ -116,7 +116,7 @@ router.post("/push/test", async (req: Request, res: Response): Promise<void> => 
   res.json({ ok: true });
 });
 
-router.post("/push/update-schedule", async (req: Request, res: Response): Promise<void> => {
+router.post("/push/update-schedule", async (req: any, res: any): Promise<void> => {
   const { endpoint, morningEnabled, morningTime, morningMessage, eveningEnabled, eveningTime, eveningMessage } = req.body as {
     endpoint: string;
     morningEnabled: boolean; morningTime: string; morningMessage: string;
@@ -136,7 +136,7 @@ router.post("/push/update-schedule", async (req: Request, res: Response): Promis
 });
 
 // CRON Endpoint for Vercel / External Scheduler
-router.get("/push/cron", async (_req: Request, res: Response): Promise<void> => {
+router.get("/push/cron", async (_req: any, res: any): Promise<void> => {
   const now = new Date(); // Server Time (UTC in Vercel)
   
   console.log(`[PGWOS-CRON] Processing notifications at ${now.toISOString()}`);

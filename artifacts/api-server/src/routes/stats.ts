@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { db, tasksTable, habitsTable, habitLogsTable, leadsTable, checkinsTable } from "@workspace/db";
 import {
@@ -10,7 +10,7 @@ import {
 
 const router = Router();
 
-router.get("/stats/dashboard", async (_req: Request, res: Response): Promise<void> => {
+router.get("/stats/dashboard", async (_req: any, res: any): Promise<void> => {
   const today = new Date().toISOString().split("T")[0];
 
   const [tasks, habits, habitLogs, leads] = await Promise.all([
@@ -120,12 +120,12 @@ async function computeStreak(): Promise<{ currentStreak: number; longestStreak: 
   return { currentStreak, longestStreak, lastCheckinDate: lastDate };
 }
 
-router.get("/stats/streak", async (_req: Request, res: Response): Promise<void> => {
+router.get("/stats/streak", async (_req: any, res: any): Promise<void> => {
   const streakData = await computeStreak();
   res.json(GetStreakResponse.parse(streakData));
 });
 
-router.get("/stats/analytics", async (req: Request, res: Response): Promise<void> => {
+router.get("/stats/analytics", async (req: any, res: any): Promise<void> => {
   const query = GetAnalyticsQueryParams.safeParse(req.query);
   const days = query.success && query.data.days ? query.data.days : 30;
 

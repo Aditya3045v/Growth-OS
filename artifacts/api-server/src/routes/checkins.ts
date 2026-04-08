@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, checkinsTable } from "@workspace/db";
 import type { Checkin } from "@workspace/db";
@@ -13,20 +13,20 @@ const router = Router();
 
 const toCheckin = (c: Checkin) => ({ ...c, date: new Date(c.date), createdAt: new Date(c.createdAt) });
 
-router.get("/checkins/today", async (_req: Request, res: Response): Promise<void> => {
+router.get("/checkins/today", async (_req: any, res: any): Promise<void> => {
   const today = new Date().toISOString().split("T")[0];
   const [checkin] = await db.select().from(checkinsTable).where(eq(checkinsTable.date, today));
   res.json(GetTodayCheckinResponse.parse({ checkin: checkin ? toCheckin(checkin) : null }));
 });
 
-router.get("/checkins", async (req: Request, res: Response): Promise<void> => {
+router.get("/checkins", async (req: any, res: any): Promise<void> => {
   const query = ListCheckinsQueryParams.safeParse(req.query);
   const limit = query.success && query.data.limit ? query.data.limit : 30;
   const checkins = await db.select().from(checkinsTable).orderBy(desc(checkinsTable.date)).limit(limit);
   res.json(ListCheckinsResponse.parse(checkins.map(toCheckin)));
 });
 
-router.post("/checkins", async (req: Request, res: Response): Promise<void> => {
+router.post("/checkins", async (req: any, res: any): Promise<void> => {
   const parsed = CreateCheckinBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

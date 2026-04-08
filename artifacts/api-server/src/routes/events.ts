@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db, eventsTable } from "@workspace/db";
 import {
@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-router.get("/events", async (req: Request, res: Response): Promise<void> => {
+router.get("/events", async (req: any, res: any): Promise<void> => {
   const query = ListEventsQueryParams.safeParse(req.query);
   let events = await db.select().from(eventsTable).orderBy(eventsTable.startDate);
 
@@ -27,7 +27,7 @@ router.get("/events", async (req: Request, res: Response): Promise<void> => {
   res.json(ListEventsResponse.parse(events));
 });
 
-router.post("/events", async (req: Request, res: Response): Promise<void> => {
+router.post("/events", async (req: any, res: any): Promise<void> => {
   const parsed = CreateEventBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -37,7 +37,7 @@ router.post("/events", async (req: Request, res: Response): Promise<void> => {
   res.status(201).json(event);
 });
 
-router.patch("/events/:id", async (req: Request, res: Response): Promise<void> => {
+router.patch("/events/:id", async (req: any, res: any): Promise<void> => {
   const params = UpdateEventParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -56,7 +56,7 @@ router.patch("/events/:id", async (req: Request, res: Response): Promise<void> =
   res.json(UpdateEventResponse.parse(event));
 });
 
-router.delete("/events/:id", async (req: Request, res: Response): Promise<void> => {
+router.delete("/events/:id", async (req: any, res: any): Promise<void> => {
   const params = DeleteEventParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

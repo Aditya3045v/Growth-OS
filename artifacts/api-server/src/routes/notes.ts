@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db, notesTable } from "@workspace/db";
 import {
@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-router.get("/notes", async (req: Request, res: Response): Promise<void> => {
+router.get("/notes", async (req: any, res: any): Promise<void> => {
   const query = ListNotesQueryParams.safeParse(req.query);
   let notes = await db.select().from(notesTable).orderBy(notesTable.updatedAt);
   notes = notes.reverse();
@@ -33,7 +33,7 @@ router.get("/notes", async (req: Request, res: Response): Promise<void> => {
   res.json(ListNotesResponse.parse(notes));
 });
 
-router.post("/notes", async (req: Request, res: Response): Promise<void> => {
+router.post("/notes", async (req: any, res: any): Promise<void> => {
   const parsed = CreateNoteBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -43,7 +43,7 @@ router.post("/notes", async (req: Request, res: Response): Promise<void> => {
   res.status(201).json(note);
 });
 
-router.patch("/notes/:id", async (req: Request, res: Response): Promise<void> => {
+router.patch("/notes/:id", async (req: any, res: any): Promise<void> => {
   const params = UpdateNoteParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -62,7 +62,7 @@ router.patch("/notes/:id", async (req: Request, res: Response): Promise<void> =>
   res.json(UpdateNoteResponse.parse(note));
 });
 
-router.delete("/notes/:id", async (req: Request, res: Response): Promise<void> => {
+router.delete("/notes/:id", async (req: any, res: any): Promise<void> => {
   const params = DeleteNoteParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
