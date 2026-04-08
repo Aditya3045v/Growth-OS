@@ -5,7 +5,7 @@
   "crons": [
     {
       "path": "/api/push/cron",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
     }
   ],
   "functions": {
