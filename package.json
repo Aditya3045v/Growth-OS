@@ -9,7 +9,7 @@
   },
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
