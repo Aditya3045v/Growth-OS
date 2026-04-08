@@ -1,32 +1,31 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import pinoHttp from "pino-http";
+import pinoHttp, { HttpLogger } from "pino-http";
 import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 
 const app = express();
 
-// @ts-ignore - pino-http ESM/CJS interop handling
-const pino = (pinoHttp as any).default || pinoHttp;
+const pinoMiddleware = ((pinoHttp as any).default || pinoHttp) as any;
 
 app.use(
-  pino({
+  pinoMiddleware({
     logger,
     serializers: {
       req(req: Request) {
         return {
           id: (req as any).id,
-          method: (req as any).method,
-          url: (req as any).url?.split("?")[0],
+          method: req.method,
+          url: req.url?.split("?")[0],
         };
       },
       res(res: Response) {
         return {
-          statusCode: (res as any).statusCode,
+          statusCode: res.statusCode,
         };
       },
     },
-  }),
+  }) as express.RequestHandler,
 );
 app.use(cors());
 app.use(express.json());
