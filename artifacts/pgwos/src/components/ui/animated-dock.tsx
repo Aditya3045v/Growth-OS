@@ -25,83 +25,115 @@ export interface AnimatedDockProps {
 }
 
 export const AnimatedDock = ({ className, items }: AnimatedDockProps) => {
-  const mouseX = useMotionValue(Infinity);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // Single shared motion value — fed by BOTH mouse and touch
+  const pointerX = useMotionValue(Infinity);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // ── Desktop mouse ─────────────────────────────────────────────────
+  const handleMouseMove = (e: React.MouseEvent) => pointerX.set(e.pageX);
+  const handleMouseLeave = () => pointerX.set(Infinity);
+
+  // ── Mobile touch ─────────────────────────────────────────────────
+  // We use the raw touch pageX so the coordinate space matches getBoundingClientRect
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) pointerX.set(touch.pageX);
+  };
+  const handleTouchEnd = () => pointerX.set(Infinity);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "relative flex items-end rounded-2xl overflow-hidden",
+        "flex items-end gap-3 px-4 pb-3 pt-2 overflow-x-auto hide-scrollbar",
         className
       )}
+      style={{
+        // Native momentum scroll for horizontal swipe on mobile
+        WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
+        scrollSnapType: "x proximity",
+        // Allow horizontal pan for both scroll and touch-tracking
+        touchAction: "pan-x",
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
-      {/* Scrollable track — handles touch on mobile */}
-      <div
-        ref={scrollRef}
-        className="flex items-end gap-3 px-4 pb-3 pt-2 overflow-x-auto hide-scrollbar"
-        style={{
-          WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
-          scrollSnapType: "x proximity",
-          /* let browser handle horizontal swipe natively */
-          touchAction: "pan-x",
-          cursor: "grab",
-        }}
-      >
-        {/* Desktop hover detection layer — invisible, pointer events only on desktop */}
-        <motion.div
-          onMouseMove={(e) => mouseX.set(e.pageX)}
-          onMouseLeave={() => mouseX.set(Infinity)}
-          className="absolute inset-0 pointer-events-none md:pointer-events-auto"
-        />
-
-        {items.map((item) => (
-          <DockItem key={item.href} mouseX={mouseX} item={item} />
-        ))}
-      </div>
+      {items.map((item) => (
+        <DockItem key={item.href} pointerX={pointerX} item={item} />
+      ))}
     </div>
   );
 };
 
 interface DockItemProps {
-  mouseX: MotionValue<number>;
+  pointerX: MotionValue<number>;
   item: DockItemData;
 }
 
-const DockItem = ({ mouseX, item }: DockItemProps) => {
+const DockItem = ({ pointerX, item }: DockItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
   const isActive = location === item.href;
 
-  const distance = useTransform(mouseX, (val) => {
+  // Distance from pointer to item center — works identically for mouse & touch
+  const distance = useTransform(pointerX, (val) => {
+    if (val === Infinity) return Infinity;
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - bounds.x - bounds.width / 2;
+    // pageX vs clientX: account for scroll offset
+    const scrollX = window.scrollX ?? 0;
+    return val - (bounds.x + scrollX) - bounds.width / 2;
   });
 
-  const widthSync = useTransform(distance, [-160, 0, 160], [44, 68, 44]);
-  const width = useSpring(widthSync, { mass: 0.1, stiffness: 170, damping: 14 });
+  // Map proximity → size: 44px at rest, 72px at pointer center
+  const widthSync = useTransform(distance, (d) => {
+    if (d === Infinity) return 44;
+    // Gaussian-ish falloff: full effect within ±120px, fades to 0 at ±200px
+    const abs = Math.abs(d);
+    if (abs > 200) return 44;
+    const t = 1 - abs / 200;
+    return 44 + 28 * t * t;
+  });
 
-  const iconScale = useTransform(width, [44, 68], [1, 1.45]);
-  const iconSpring = useSpring(iconScale, { mass: 0.1, stiffness: 170, damping: 14 });
+  const width = useSpring(widthSync, {
+    mass: 0.07,
+    stiffness: 200,
+    damping: 16,
+  });
+
+  const iconScale = useTransform(width, [44, 72], [1, 1.5]);
+  const iconSpring = useSpring(iconScale, {
+    mass: 0.07,
+    stiffness: 200,
+    damping: 16,
+  });
+
+  // Vertical "lift" — items rise slightly as they grow (iOS behaviour)
+  const y = useTransform(width, [44, 72], [0, -10]);
+  const ySpring = useSpring(y, { mass: 0.07, stiffness: 200, damping: 16 });
 
   return (
     <Link href={item.href}>
       <motion.div
         ref={ref}
-        style={{ width }}
+        style={{ width, y: ySpring }}
         title={item.label}
         className={cn(
-          "aspect-square flex-shrink-0 flex items-center justify-center rounded-full cursor-pointer select-none",
-          "transition-shadow duration-200",
-          "scroll-snap-align-center",
+          "aspect-square flex-shrink-0 flex items-center justify-center rounded-full",
+          "cursor-pointer select-none origin-bottom",
+          "transition-shadow duration-150",
+          "[scroll-snap-align:center]",
           isActive
-            ? "bg-gradient-to-br from-[#94aaff] to-[#809bff] shadow-[0_4px_24px_rgba(148,170,255,0.35)]"
-            : "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(148,170,255,0.12)] active:bg-[rgba(148,170,255,0.18)]"
+            ? "bg-gradient-to-br from-[#94aaff] to-[#809bff] shadow-[0_4px_24px_rgba(148,170,255,0.4)]"
+            : "bg-[rgba(255,255,255,0.07)] active:bg-[rgba(148,170,255,0.2)]"
         )}
       >
         <motion.div
           style={{ scale: iconSpring }}
           className={cn(
-            "flex items-center justify-center w-full h-full",
+            "flex items-center justify-center w-full h-full pointer-events-none",
             isActive ? "text-[#000]" : "text-[#adaaaa]"
           )}
         >
