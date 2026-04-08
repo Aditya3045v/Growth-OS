@@ -1,1 +1,0 @@
-artifacts/api-server/src/routes/habits.ts(94,35): error TS2339: Property 'deadline' does not exist on type '{ title?: string | undefined; category?: string | undefined; inputType?: string | undefined; isActive?: boolean | undefined; order?: number | undefined; }'.

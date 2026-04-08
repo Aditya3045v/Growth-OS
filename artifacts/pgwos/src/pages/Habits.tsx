@@ -8,8 +8,12 @@ import {
   useGetSettings,
   useUpdateSettings,
   useUpdateHabit,
+  useListIdeas,
+  useCreateIdea,
+  useUpdateIdea,
+  useDeleteIdea,
 } from "@workspace/api-client-react";
-import type { Habit, HabitLog } from "@workspace/api-client-react";
+import type { Habit, HabitLog, Idea } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -145,6 +149,9 @@ export default function Habits() {
         <span className="material-symbols-outlined">add_circle</span>
         Add Custom Habit
       </button>
+
+      {/* ⚡ Idea Vault - Quick Capture */}
+      <IdeaVaultMini />
 
       {showAdd && <AddHabitModal onClose={() => setShowAdd(false)} />}
       {showVideoModal && (
@@ -419,6 +426,128 @@ function NotesControl({ onComplete }: { onComplete: (val: string) => void }) {
   );
 }
 
+function IdeaVaultMini() {
+  const { data: ideas = [] } = useListIdeas();
+  const createIdea = useCreateIdea();
+  const updateIdea = useUpdateIdea();
+  const deleteIdea = useDeleteIdea();
+  const queryClient = useQueryClient();
+  const [input, setInput] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  const handleAdd = () => {
+    const text = input.trim();
+    if (!text) return;
+    createIdea.mutate(
+      { data: { text } },
+      { onSuccess: () => { setInput(""); queryClient.invalidateQueries({ queryKey: ["/api/ideas"] }); } }
+    );
+  };
+
+  const pending = ideas.filter((i) => !i.done);
+  const done = ideas.filter((i) => i.done);
+  const visible = expanded ? ideas : pending.slice(0, 3);
+
+  return (
+    <div className="bg-[#131313] rounded-2xl ds-ghost-border border-l-4 border-[#d084ff] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-5 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(208,132,255,0.12)] flex items-center justify-center">
+            <span className="material-symbols-outlined text-[#d084ff] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+          </div>
+          <div>
+            <p className="text-[10px] font-['Inter'] uppercase tracking-widest text-[#adaaaa] font-bold">Digital Sanctuary</p>
+            <h3 className="font-['Manrope'] font-bold text-base leading-tight text-white">
+              Idea Vault
+              {pending.length > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#d084ff] text-[#000] text-[10px] font-extrabold">{pending.length}</span>
+              )}
+            </h3>
+          </div>
+        </div>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="text-[#adaaaa] hover:text-[#d084ff] transition-colors p-1.5 rounded-lg hover:bg-[rgba(208,132,255,0.1)]"
+        >
+          <span className="material-symbols-outlined text-sm">{expanded ? "expand_less" : "expand_more"}</span>
+        </button>
+      </div>
+
+      {/* Quick input */}
+      <div className="px-5 pb-4">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+            placeholder="Capture a new idea…"
+            className="flex-1 bg-[#262626] border-none rounded-xl py-2.5 px-3.5 text-sm text-white placeholder:text-[#767575] focus:outline-none focus:ring-1 focus:ring-[#d084ff]"
+          />
+          <button
+            onClick={handleAdd}
+            disabled={!input.trim() || createIdea.isPending}
+            className="px-4 py-2.5 bg-[#d084ff] text-[#000] font-bold text-sm rounded-xl disabled:opacity-40 active:scale-95 transition-transform"
+          >
+            <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Ideas list */}
+      {(visible.length > 0 || done.length > 0) && (
+        <div className="px-5 pb-4 space-y-2">
+          {visible.map((idea: Idea) => (
+            <div
+              key={idea.id}
+              className="flex items-start gap-3 group py-1"
+            >
+              {/* Checkbox */}
+              <button
+                onClick={() => updateIdea.mutate(
+                  { id: idea.id, data: { done: !idea.done } },
+                  { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/ideas"] }) }
+                )}
+                className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                  idea.done ? "bg-[#d084ff] border-[#d084ff]" : "border-[#484847] hover:border-[#d084ff]"
+                }`}
+              >
+                {idea.done && <span className="material-symbols-outlined text-[13px] text-[#000]">check</span>}
+              </button>
+              <span className={`flex-1 text-sm leading-snug ${idea.done ? "line-through text-[#767575]" : "text-white"}`}>
+                {idea.text}
+              </span>
+              <button
+                onClick={() => deleteIdea.mutate(
+                  { id: idea.id },
+                  { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/ideas"] }) }
+                )}
+                className="p-1 rounded-lg text-transparent group-hover:text-[#adaaaa] hover:!text-[#ff6e84] hover:bg-[rgba(255,110,132,0.1)] transition-all shrink-0"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+              </button>
+            </div>
+          ))}
+
+          {!expanded && pending.length > 3 && (
+            <button
+              onClick={() => setExpanded(true)}
+              className="text-[10px] text-[#d084ff] font-bold uppercase tracking-wider"
+            >
+              + {pending.length - 3} more ideas
+            </button>
+          )}
+        </div>
+      )}
+
+      {ideas.length === 0 && (
+        <p className="px-5 pb-5 text-xs text-[#767575] italic">No ideas yet — drop your first spark above ✨</p>
+      )}
+    </div>
+  );
+}
+
 function AddHabitModal({ onClose }: { onClose: () => void }) {
   const createHabit = useCreateHabit();
   const queryClient = useQueryClient();
@@ -452,8 +581,8 @@ function AddHabitModal({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#000]/70 backdrop-blur-sm p-4">
-      <div className="bg-[#131313] w-full max-w-md rounded-3xl p-6 space-y-5 ds-ghost-border">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#000]/70 backdrop-blur-sm p-4">
+      <div className="bg-[#131313] w-full max-w-md rounded-3xl p-6 space-y-5 ds-ghost-border max-h-[90dvh] overflow-y-auto">
         <div className="flex justify-between items-center">
           <h3 className="font-['Manrope'] font-bold text-xl">Create Custom Habit</h3>
           <button onClick={onClose} className="p-1.5 rounded-full text-[#adaaaa] hover:bg-[#2c2c2c]">
@@ -559,7 +688,7 @@ function WiseVideoModal({ currentUrl, onClose, onSaved }: { currentUrl: string; 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#000]/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#000]/70 backdrop-blur-sm p-4">
       <div className="bg-[#131313] w-full max-w-md rounded-3xl p-6 space-y-5 ds-ghost-border">
         <div className="flex justify-between items-center">
           <div>
