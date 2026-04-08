@@ -1,0 +1,6 @@
+﻿artifacts/pgwos/src/pages/VideoLibrary.tsx(3,3): error TS2724: '"@workspace/api-client-react"' has no exported member named 'useListVideos'. Did you mean 'useListIdeas'?
+artifacts/pgwos/src/pages/VideoLibrary.tsx(4,3): error TS2724: '"@workspace/api-client-react"' has no exported member named 'useCreateVideo'. Did you mean 'useCreateIdea'?
+artifacts/pgwos/src/pages/VideoLibrary.tsx(5,3): error TS2724: '"@workspace/api-client-react"' has no exported member named 'useUpdateVideo'. Did you mean 'useUpdateIdea'?
+artifacts/pgwos/src/pages/VideoLibrary.tsx(6,3): error TS2724: '"@workspace/api-client-react"' has no exported member named 'useDeleteVideo'. Did you mean 'useDeleteIdea'?
+artifacts/pgwos/src/pages/VideoLibrary.tsx(8,15): error TS2305: Module '"@workspace/api-client-react"' has no exported member 'Video'.
+artifacts/pgwos/src/pages/VideoLibrary.tsx(163,27): error TS7006: Parameter 'v' implicitly has an 'any' type.

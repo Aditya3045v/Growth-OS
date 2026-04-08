@@ -10,6 +10,7 @@ import statsRouter from "./stats.js";
 import settingsRouter from "./settings.js";
 import notificationsRouter from "./notifications.js";
 import ideasRouter from "./ideas.js";
+import videosRouter from "./videos.js";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use(statsRouter);
 router.use(settingsRouter);
 router.use(notificationsRouter);
 router.use(ideasRouter);
+router.use(videosRouter);
 
 export default router;

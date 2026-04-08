@@ -412,3 +412,26 @@ export type ListCheckinsParams = {
 export type GetAnalyticsParams = {
   days?: number;
 };
+
+export interface Video {
+  id: number;
+  title: string;
+  url: string;
+  folder: string;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateVideoBody {
+  title: string;
+  url: string;
+  folder: string;
+  notes?: string | null;
+}
+
+export interface UpdateVideoBody {
+  title?: string;
+  url?: string;
+  folder?: string;
+  notes?: string | null;
+}

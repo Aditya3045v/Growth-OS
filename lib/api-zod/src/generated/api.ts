@@ -688,3 +688,42 @@ export const UpdateIdeaResponse = zod.object({
 export const DeleteIdeaParams = zod.object({
   id: zod.coerce.number(),
 });
+
+// ── Video Library ────────────────────────────────────────────────────
+
+export const VideoItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  url: zod.string(),
+  folder: zod.string(),
+  notes: zod.string().nullable().optional(),
+  createdAt: zod.date(),
+});
+
+export const ListVideosResponse = zod.array(VideoItem);
+
+export const GetVideoResponse = VideoItem;
+
+export const CreateVideoBody = zod.object({
+  title: zod.string().min(1),
+  url: zod.string().url(),
+  folder: zod.string().min(1).default("General"),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateVideoBody = zod.object({
+  title: zod.string().optional(),
+  url: zod.string().url().optional(),
+  folder: zod.string().optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateVideoResponse = VideoItem;
+
+export const DeleteVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
