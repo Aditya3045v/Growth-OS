@@ -55,7 +55,14 @@ router.post("/habits", async (req: any, res: any): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [habit] = await db.insert(habitsTable).values({ ...parsed.data, isDefault: false, isActive: true }).returning();
+  const deadlineCreateStr = parsed.data.deadline;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [habit] = await (db.insert(habitsTable) as any).values({
+    ...parsed.data,
+    deadline: deadlineCreateStr ? new Date(deadlineCreateStr) : null,
+    isDefault: false,
+    isActive: true,
+  }).returning();
   res.status(201).json(GetHabitResponse.parse(habit));
 });
 
@@ -84,7 +91,12 @@ router.patch("/habits/:id", async (req: any, res: any): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [habit] = await db.update(habitsTable).set(parsed.data).where(eq(habitsTable.id, params.data.id)).returning();
+  const deadlineStr = parsed.data.deadline;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [habit] = await (db.update(habitsTable) as any).set({
+    ...parsed.data,
+    deadline: deadlineStr ? new Date(deadlineStr) : (deadlineStr === null ? null : undefined),
+  }).where(eq(habitsTable.id, params.data.id)).returning();
   if (!habit) {
     res.status(404).json({ error: "Habit not found" });
     return;

@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { useListNotes, useCreateNote, useUpdateNote, useDeleteNote } from "@workspace/api-client-react";
-import type { Note } from "@workspace/api-client-react";
+import {
+  useListNotes, useCreateNote, useUpdateNote, useDeleteNote,
+  useListIdeas, useCreateIdea, useUpdateIdea, useDeleteIdea,
+} from "@workspace/api-client-react";
+import type { Note, Idea } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -99,6 +102,9 @@ export default function Notes() {
           </button>
         </Link>
       </section>
+
+      {/* ── IDEA VAULT ── */}
+      <IdeaVault />
 
       {/* Tag Filters */}
       {allTags.length > 0 && (
@@ -270,5 +276,175 @@ function NoteForm({ initial, onClose, onSaved }: {
         </form>
       </div>
     </div>
+  );
+}
+
+// ── IDEA VAULT COMPONENT ─────────────────────────────────────────────────────
+
+function IdeaVault() {
+  const { data: ideas, isLoading } = useListIdeas();
+  const createIdea = useCreateIdea();
+  const updateIdea = useUpdateIdea();
+  const deleteIdea = useDeleteIdea();
+  const queryClient = useQueryClient();
+  const [text, setText] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [filter, setFilter] = useState<"all" | "pending" | "done">("all");
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["/api/ideas"] });
+
+  const handleAdd = () => {
+    if (!text.trim()) return;
+    createIdea.mutate({ data: { text: text.trim() } }, {
+      onSuccess: () => { setText(""); setIsAdding(false); invalidate(); }
+    });
+  };
+
+  const toggle = (idea: Idea) => {
+    updateIdea.mutate({ id: idea.id, data: { done: !idea.done } }, { onSuccess: invalidate });
+  };
+
+  const remove = (id: number) => {
+    deleteIdea.mutate({ id }, { onSuccess: invalidate });
+  };
+
+  const filtered = ideas?.filter(i => {
+    if (filter === "pending") return !i.done;
+    if (filter === "done") return i.done;
+    return true;
+  }) || [];
+
+  const pendingCount = ideas?.filter(i => !i.done).length || 0;
+  const doneCount = ideas?.filter(i => i.done).length || 0;
+
+  return (
+    <section className="bg-[#131313] rounded-2xl ds-ghost-border overflow-hidden border-l-4 border-[#5cfd80]">
+      {/* Header */}
+      <div className="p-5 pb-0">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-['Inter'] uppercase tracking-[0.2em] text-[#adaaaa] font-bold mb-0.5">Digital Sanctuary</p>
+            <h3 className="font-['Manrope'] font-bold text-xl flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#5cfd80]" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+              Idea Vault
+            </h3>
+            <p className="text-[#adaaaa] text-xs mt-1">Capture random ideas — from daydreams, walks, or anywhere.</p>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p className="text-2xl font-['Manrope'] font-extrabold text-[#5cfd80]">{pendingCount}</p>
+            <p className="text-[10px] text-[#adaaaa] uppercase tracking-wider">pending</p>
+          </div>
+        </div>
+
+        {/* Filter pills */}
+        <div className="flex gap-2 mt-4 pb-4 border-b border-[rgba(72,72,71,0.15)]">
+          {(["all", "pending", "done"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                filter === f ? "bg-[#5cfd80] text-[#000]" : "bg-[rgba(92,253,128,0.08)] text-[#5cfd80] hover:bg-[rgba(92,253,128,0.15)]"
+              }`}
+            >
+              {f} {f === "pending" ? `(${pendingCount})` : f === "done" ? `(${doneCount})` : `(${ideas?.length || 0})`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Ideas list */}
+      <div className="p-5 space-y-2 max-h-[360px] overflow-y-auto">
+        {isLoading && (
+          <div className="space-y-2">
+            {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-[#1a1a1a] rounded-xl animate-pulse" />)}
+          </div>
+        )}
+
+        {!isLoading && filtered.length === 0 && (
+          <div className="text-center py-10">
+            <span className="material-symbols-outlined text-4xl text-[#484847]">lightbulb</span>
+            <p className="text-[#adaaaa] text-sm mt-2">
+              {filter === "done" ? "No completed ideas yet" : "No ideas yet. Add one below!"}
+            </p>
+          </div>
+        )}
+
+        {filtered.map((idea) => (
+          <div
+            key={idea.id}
+            className={`flex items-start gap-3 p-3 rounded-xl transition-all group ${
+              idea.done ? "bg-[rgba(92,253,128,0.03)] opacity-60" : "bg-[#1a1a1a] hover:bg-[#202020]"
+            }`}
+          >
+            {/* Checkbox */}
+            <button
+              onClick={() => toggle(idea)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                idea.done ? "bg-[rgba(92,253,128,0.15)] border-[#5cfd80]" : "border-[#484847] hover:border-[#5cfd80]"
+              }`}
+            >
+              {idea.done && <span className="material-symbols-outlined text-[#5cfd80] text-xs">check</span>}
+            </button>
+
+            <p className={`flex-1 text-sm leading-relaxed ${idea.done ? "line-through text-[#767575]" : "text-white"}`}>
+              {idea.text}
+            </p>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-[10px] text-[#484847] font-['Inter']">
+                {format(new Date(idea.createdAt), "MMM d")}
+              </span>
+              <button
+                onClick={() => remove(idea.id)}
+                className="p-1.5 rounded-lg text-[#484847] hover:text-[#ff6e84] hover:bg-[rgba(255,110,132,0.1)] transition-all opacity-0 group-hover:opacity-100 ml-1"
+                aria-label="Delete idea"
+              >
+                <span className="material-symbols-outlined text-[14px]">delete</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add idea area */}
+      <div className="p-4 pt-0">
+        {isAdding ? (
+          <div className="space-y-2">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAdd(); } }}
+              className="w-full bg-[#0e0e0e] border border-[rgba(92,253,128,0.3)] rounded-xl py-3 px-4 text-white placeholder:text-[#484847] focus:outline-none focus:border-[#5cfd80] resize-none text-sm leading-relaxed transition-colors"
+              placeholder="What's the idea? (Enter to save, Shift+Enter for newline)"
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setIsAdding(false); setText(""); }}
+                className="flex-1 py-2.5 text-[11px] font-bold text-[#adaaaa] bg-[#1a1a1a] rounded-xl hover:bg-[#262626] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAdd}
+                disabled={!text.trim() || createIdea.isPending}
+                className="flex-1 py-2.5 text-[11px] font-bold bg-[#5cfd80] text-[#000] rounded-xl hover:bg-[#4de870] transition-colors disabled:opacity-40"
+              >
+                {createIdea.isPending ? "Saving..." : "Save Idea"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="w-full flex items-center gap-3 py-3.5 px-4 bg-[rgba(92,253,128,0.06)] border border-dashed border-[rgba(92,253,128,0.3)] rounded-xl text-[#5cfd80] hover:bg-[rgba(92,253,128,0.1)] transition-all active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            <span className="text-sm font-['Manrope'] font-bold">Capture a new idea...</span>
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

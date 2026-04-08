@@ -1,0 +1,23 @@
+﻿
+> @workspace/db@0.0.0 push
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file 'C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db\drizzle.config.ts'
+node.exe : DATABASE_URL, 
+ensure the database is 
+provisioned
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (DAT  
+  ABASE_URL, e... is pro   
+ visioned:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 

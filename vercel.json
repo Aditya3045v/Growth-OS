@@ -5,9 +5,14 @@
   "crons": [
     {
       "path": "/api/push/cron",
-      "schedule": "0 0 * * *"
+      "schedule": "0 9 * * *"
     }
   ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "artifacts/api-server/dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

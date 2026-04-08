@@ -40,7 +40,7 @@ catalogs:
       specifier: ^0.7.1
       version: 0.7.1
     clsx:
-      specifier: ^2.1.1
+      specifier: 2.1.1
       version: 2.1.1
     drizzle-orm:
       specifier: ^0.45.1
@@ -58,7 +58,7 @@ catalogs:
       specifier: 19.1.0
       version: 19.1.0
     tailwind-merge:
-      specifier: ^3.3.1
+      specifier: 3.5.0
       version: 3.5.0
     tailwindcss:
       specifier: ^4.1.14
@@ -349,6 +349,9 @@ importers:
       '@hello-pangea/dnd':
         specifier: ^18.0.1
         version: 18.0.1(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      motion:
+        specifier: ^12.38.0
+        version: 12.38.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
@@ -593,6 +596,9 @@ importers:
       '@types/pg':
         specifier: ^8.18.0
         version: 8.18.0
+      dotenv:
+        specifier: ^17.4.1
+        version: 17.4.1
       drizzle-kit:
         specifier: ^0.31.9
         version: 0.31.9
@@ -2292,6 +2298,10 @@ packages:
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
 
+  dotenv@17.4.1:
+    resolution: {integrity: sha512-k8DaKGP6r1G30Lx8V4+pCsLzKr8vLmV2paqEj1Y55GdAgJuIqpRp5FfajGF8KtwMxCz9qJc6wUIJnm053d/WCw==}
+    engines: {node: '>=12'}
+
   drizzle-kit@0.31.9:
     resolution: {integrity: sha512-GViD3IgsXn7trFyBUUHyTFBpH/FsHTxYJ66qdbVggxef4UBPHRYxQaRzYLTuekYnk9i5FIEL9pbBIwMqX/Uwrg==}
     hasBin: true
@@ -2554,6 +2564,20 @@ packages:
 
   framer-motion@12.35.1:
     resolution: {integrity: sha512-rL8cLrjYZNShZqKV3U0Qj6Y5WDiZXYEM5giiTLfEqsIZxtspzMDCkKmrO5po76jWfvOg04+Vk+sfBvTD0iMmLw==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+  framer-motion@12.38.0:
+    resolution: {integrity: sha512-rFYkY/pigbcswl1XQSb7q424kSTQ8q6eAC+YUsSKooHQYuLdzdHjrt6uxUC+PRAO++q5IS7+TamgIw1AphxR+g==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -2912,8 +2936,28 @@ packages:
   motion-dom@12.35.1:
     resolution: {integrity: sha512-7n6r7TtNOsH2UFSAXzTkfzOeO5616v9B178qBIjmu/WgEyJK0uqwytCEhwKBTuM/HJA40ptAw7hLFpxtPAMRZQ==}
 
+  motion-dom@12.38.0:
+    resolution: {integrity: sha512-pdkHLD8QYRp8VfiNLb8xIBJis1byQ9gPT3Jnh2jqfFtAsWUA3dEepDlsWe/xMpO8McV+VdpKVcp+E+TGJEtOoA==}
+
   motion-utils@12.29.2:
     resolution: {integrity: sha512-G3kc34H2cX2gI63RqU+cZq+zWRRPSsNIOjpdl9TN4AQwC4sgwYPl/Q/Obf/d53nOm569T0fYK+tcoSV50BWx8A==}
+
+  motion-utils@12.36.0:
+    resolution: {integrity: sha512-eHWisygbiwVvf6PZ1vhaHCLamvkSbPIeAYxWUuL3a2PD/TROgE7FvfHWTIH4vMl798QLfMw15nRqIaRDXTlYRg==}
+
+  motion@12.38.0:
+    resolution: {integrity: sha512-uYfXzeHlgThchzwz5Te47dlv5JOUC7OB4rjJ/7XTUgtBZD8CchMN8qEJ4ZVsUmTyYA44zjV0fBwsiktRuFnn+w==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
@@ -5322,6 +5366,8 @@ snapshots:
       '@babel/runtime': 7.28.6
       csstype: 3.2.3
 
+  dotenv@17.4.1: {}
+
   drizzle-kit@0.31.9:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
@@ -5555,6 +5601,15 @@ snapshots:
     dependencies:
       motion-dom: 12.35.1
       motion-utils: 12.29.2
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
+  framer-motion@12.38.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      motion-dom: 12.38.0
+      motion-utils: 12.36.0
       tslib: 2.8.1
     optionalDependencies:
       react: 19.1.0
@@ -5849,7 +5904,21 @@ snapshots:
     dependencies:
       motion-utils: 12.29.2
 
+  motion-dom@12.38.0:
+    dependencies:
+      motion-utils: 12.36.0
+
   motion-utils@12.29.2: {}
+
+  motion-utils@12.36.0: {}
+
+  motion@12.38.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      framer-motion: 12.38.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   ms@2.0.0: {}
 

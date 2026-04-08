@@ -2,15 +2,28 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useGetStreak, useGetSettings } from "@workspace/api-client-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { AnimatedDock } from "@/components/ui/animated-dock";
+
+const MSIcon = ({ name }: { name: string }) => (
+  <span
+    className="material-symbols-outlined"
+    style={{
+      fontSize: 22,
+      fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
+    }}
+  >
+    {name}
+  </span>
+);
 
 const NAV_ITEMS = [
-  { href: "/",          icon: "home",             label: "Home"      },
-  { href: "/tasks",     icon: "task_alt",         label: "Tasks"     },
-  { href: "/calendar",  icon: "calendar_month",   label: "Schedule"  },
-  { href: "/habits",    icon: "self_improvement", label: "Growth"    },
-  { href: "/leads",     icon: "people",           label: "Pipeline"  },
-  { href: "/analytics", icon: "bar_chart",        label: "Insights"  },
-  { href: "/notes",     icon: "auto_stories",     label: "Notes"     },
+  { href: "/",          icon: <MSIcon name="home" />,             label: "Home"      },
+  { href: "/tasks",     icon: <MSIcon name="task_alt" />,         label: "Tasks"     },
+  { href: "/habits",    icon: <MSIcon name="self_improvement" />, label: "Growth"    },
+  { href: "/videos",    icon: <MSIcon name="video_library" />,    label: "Library"   },
+  { href: "/calendar",  icon: <MSIcon name="calendar_month" />,   label: "Schedule"  },
+  { href: "/notes",     icon: <MSIcon name="auto_stories" />,     label: "Notes"     },
+  { href: "/analytics", icon: <MSIcon name="bar_chart" />,        label: "Insights"  },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -22,6 +35,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/notes":     "Digital Sanctuary",
   "/analytics": "Analytics",
   "/settings":  "Settings",
+  "/videos":    "Video Library",
 };
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -41,6 +55,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           You're offline — reading from cache
         </div>
       )}
+
       {/* Top Header */}
       <header className={`fixed left-0 right-0 z-50 bg-[#0e0e0e]/90 backdrop-blur-xl ${!isOnline ? "top-8" : "top-0"}`}>
         <div className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
@@ -69,37 +84,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 pt-[72px] pb-[80px] w-full max-w-5xl mx-auto px-4 sm:px-6">
+      <main className="flex-1 pt-[72px] pb-[100px] w-full max-w-5xl mx-auto px-4 sm:px-6">
         {children}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center px-6 pb-safe pt-3 pb-5 bg-[#0e0e0e]/85 backdrop-blur-2xl border-t border-[rgba(72,72,71,0.15)] rounded-t-3xl shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.6)]">
-        {NAV_ITEMS.map((item) => {
-          const isActive = location === item.href;
-          return (
-            <Link key={item.href} href={item.href}>
-              <button
-                className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 ${
-                  isActive ? "" : "text-[#adaaaa] hover:text-white"
-                }`}
-              >
-                {isActive ? (
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-[#94aaff] to-[#809bff] text-[#0e0e0e] shadow-[0_4px_20px_rgba(148,170,255,0.3)]">
-                    <span className="material-symbols-outlined fill text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      {item.icon}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="p-3">
-                    <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-                  </div>
-                )}
-              </button>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Animated Dock — full width for edge-to-edge scroll on mobile */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 pb-[max(16px,env(safe-area-inset-bottom,16px))] pt-2 bg-[#0e0e0e]/70 backdrop-blur-2xl"
+        style={{ borderTop: "1px solid rgba(72,72,71,0.12)" }}
+      >
+        <AnimatedDock items={NAV_ITEMS} className="w-full" />
+      </div>
     </div>
   );
 }

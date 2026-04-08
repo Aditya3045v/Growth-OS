@@ -13,11 +13,13 @@ export interface Habit {
   id: number;
   title: string;
   category: string;
-  /** checkbox | timer | number | notes | text */
+  /** checkbox | timer | number | notes | text | countdown */
   inputType: string;
   isDefault: boolean;
   isActive: boolean;
   order: number;
+  /** @nullable */
+  deadline?: string | null;
   createdAt: string;
 }
 
@@ -26,6 +28,8 @@ export interface CreateHabitBody {
   category: string;
   inputType: string;
   order?: number;
+  /** @nullable */
+  deadline?: string | null;
 }
 
 export interface UpdateHabitBody {
@@ -339,6 +343,10 @@ export interface Settings {
   morningReminderTime: string;
   afternoonReminderTime: string;
   eveningReminderTime: string;
+  /** @nullable */
+  wiseVideoUrl?: string | null;
+  hourlyQuotesEnabled?: boolean;
+  taskReminderEnabled?: boolean;
   createdAt: string;
 }
 
@@ -351,6 +359,26 @@ export interface UpdateSettingsBody {
   morningReminderTime?: string;
   afternoonReminderTime?: string;
   eveningReminderTime?: string;
+  /** @nullable */
+  wiseVideoUrl?: string | null;
+  hourlyQuotesEnabled?: boolean;
+  taskReminderEnabled?: boolean;
+}
+
+export interface Idea {
+  id: number;
+  text: string;
+  done: boolean;
+  createdAt: string;
+}
+
+export interface CreateIdeaBody {
+  text: string;
+}
+
+export interface UpdateIdeaBody {
+  text?: string;
+  done?: boolean;
 }
 
 export type GetHabitHistoryParams = {
@@ -384,3 +412,26 @@ export type ListCheckinsParams = {
 export type GetAnalyticsParams = {
   days?: number;
 };
+
+export interface Video {
+  id: number;
+  title: string;
+  url: string;
+  folder: string;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateVideoBody {
+  title: string;
+  url: string;
+  folder: string;
+  notes?: string | null;
+}
+
+export interface UpdateVideoBody {
+  title?: string;
+  url?: string;
+  folder?: string;
+  notes?: string | null;
+}

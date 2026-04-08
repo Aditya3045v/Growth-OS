@@ -1,0 +1,27 @@
+﻿
+> @workspace/db@0.0.0 push C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file 'C:\Users\ADITYA PODDAR\Downloads\Growth-OS\Growth-OS\lib\db\drizzle.config.ts'
+node.exe : require is not 
+defined in ES module 
+scope, you can use import 
+instead
+At C:\Users\ADITYA PODDAR\A
+ppData\Roaming\npm\pnpm.ps1
+:24 char:5
++     & "node$exe"  "$based
+ir/node_modules/pnpm/bin/pn
+pm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (req  
+  uire is not ... import   
+  instead:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

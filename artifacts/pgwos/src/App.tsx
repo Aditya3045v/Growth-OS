@@ -17,6 +17,7 @@ import Calendar from "./pages/Calendar";
 import Notes from "./pages/Notes";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import VideoLibrary from "./pages/VideoLibrary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +57,7 @@ function Router() {
         <Route path="/notes" component={Notes} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/settings" component={Settings} />
+        <Route path="/videos" component={VideoLibrary} />
         <Route component={NotFound} />
       </Switch>
       <CheckInModal />

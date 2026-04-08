@@ -17,6 +17,8 @@ export default function Settings() {
   const [eveningEnabled, setEveningEnabled] = useState(true);
   const [eveningTime, setEveningTime] = useState("22:00");
   const [eveningMessage, setEveningMessage] = useState("Review your progress and plan tomorrow.");
+  const [hourlyQuotes, setHourlyQuotes] = useState(false);
+  const [taskReminders, setTaskReminders] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -27,6 +29,8 @@ export default function Settings() {
       setMorningTime(settings.morningReminderTime || "07:00");
       setEveningEnabled(settings.eveningReminderEnabled ?? true);
       setEveningTime(settings.eveningReminderTime || "21:00");
+      setHourlyQuotes(settings.hourlyQuotesEnabled ?? false);
+      setTaskReminders(settings.taskReminderEnabled ?? false);
     }
   }, [settings]);
 
@@ -40,6 +44,8 @@ export default function Settings() {
         morningReminderTime: morningTime,
         eveningReminderEnabled: eveningEnabled,
         eveningReminderTime: eveningTime,
+        hourlyQuotesEnabled: hourlyQuotes,
+        taskReminderEnabled: taskReminders,
       }
     }, {
       onSuccess: () => {
@@ -179,6 +185,45 @@ export default function Settings() {
                   placeholder="Reflect on your day..."
                 />
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Hourly Quotes & Task Reminders */}
+        <div className="bg-[#131313] rounded-2xl p-6 ds-ghost-border space-y-4">
+          <div className="flex items-center gap-3 pb-4 border-b border-[rgba(72,72,71,0.1)]">
+            <div className="p-2 bg-[rgba(92,253,128,0.1)] rounded-xl">
+              <span className="material-symbols-outlined text-[#5cfd80]">schedule</span>
+            </div>
+            <h3 className="font-['Manrope'] font-bold text-lg">Smart Notifications</h3>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+            <div>
+              <p className="font-medium text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#5cfd80]">lightbulb</span>
+                Hourly Motivational Quotes
+              </p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">A fresh quote every hour (7am–10pm) to keep you fired up</p>
+            </div>
+            <Toggle checked={hourlyQuotes} onChange={setHourlyQuotes} color="#5cfd80" />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-xl">
+            <div>
+              <p className="font-medium text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#ffbd5c]">task_alt</span>
+                Task Completion Reminders
+              </p>
+              <p className="text-[#adaaaa] text-xs mt-0.5">Hourly nudges when you have pending tasks (7am–10pm)</p>
+            </div>
+            <Toggle checked={taskReminders} onChange={setTaskReminders} color="#ffbd5c" />
+          </div>
+
+          {(hourlyQuotes || taskReminders) && (
+            <div className="p-3 bg-[rgba(92,253,128,0.05)] rounded-xl border border-[rgba(92,253,128,0.1)]">
+              <p className="text-[10px] text-[#5cfd80] font-bold uppercase tracking-wider">⚡ Requires push notifications enabled below</p>
+              <p className="text-[11px] text-[#adaaaa] mt-1">Enable browser push notifications and keep the PWA installed for these to work reliably.</p>
             </div>
           )}
         </div>

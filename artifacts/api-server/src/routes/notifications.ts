@@ -135,14 +135,56 @@ router.post("/push/update-schedule", async (req: any, res: any): Promise<void> =
   res.json({ ok: true });
 });
 
+// Motivational quotes pool
+const QUOTES = [
+  "Your only limit is your mind. 🧠", "Small steps daily lead to giant leaps yearly. 🚀",
+  "Discipline is choosing between what you want now and what you want most. 💪",
+  "Success is the sum of small efforts, repeated day in and day out. ⚡",
+  "The secret of getting ahead is getting started. 🌟",
+  "Don't count the days, make the days count. 🔥",
+  "One workout away from a good mood. 💯",
+  "You don't have to be great to start, but you have to start to be great. 🎯",
+  "Push yourself, because no one else is going to do it for you. 💥",
+  "Your future is created by what you do today, not tomorrow. ⏰",
+  "Wake up with determination. Go to bed with satisfaction. 🌙",
+  "Dream big. Start small. Act now. 🌈",
+  "Excellence is not a skill, it's an attitude. 🦅",
+  "The harder you work for something, the greater you'll feel when you achieve it. 🏆",
+  "Work hard in silence. Let success make the noise. 🤫",
+  "You are one decision away from a totally different life. ✨",
+  "Be so good they can't ignore you. 🎭",
+  "It always seems impossible until it's done. Nelson Mandela 🌍",
+  "Champions keep playing until they get it right. 🥇",
+  "Your comfort zone is a beautiful place, but nothing ever grows there. 🌱",
+  "The only way to do great work is to love what you do. 🫶",
+  "Strive for progress, not perfection. 📈",
+  "Every expert was once a beginner. 🌄",
+  "Success is not final, failure is not fatal. Winston Churchill 🎖️",
+  "You miss 100% of the shots you don't take. Wayne Gretzky 🏒",
+  "Stay hungry. Stay foolish. Steve Jobs 🍎",
+  "You are stronger than you think. 💫",
+  "Do it now. Sometimes 'later' becomes 'never'. ⚡",
+  "Believe you can and you're halfway there. 🏁",
+  "Take care of your body. It's the only place you have to live. 🏃",
+  "Rise and grind. Every day is a new opportunity. ☀️",
+  "Focus on being productive instead of busy. 🧩",
+  "Great things never came from comfort zones. 🦁",
+  "Today's pain is tomorrow's power. 💪",
+  "You can do anything you set your mind to. 🎯",
+  "The best time to plant a tree was 20 years ago. The second best time is now. 🌳",
+  "Hustle until your haters ask if you're hiring. 😎",
+  "Make each day your masterpiece. John Wooden 🖼️",
+  "Success is walking from failure to failure with no loss of enthusiasm. Churchill 🚶",
+  "Winners never quit and quitters never win. Vince Lombardi 🏅",
+];
+
 // CRON Endpoint for Vercel / External Scheduler
-router.get("/push/cron", async (_req: any, res: any): Promise<void> => {
+router.get("/push/cron", async (req: any, res: any): Promise<void> => {
   const now = new Date(); // Server Time (UTC in Vercel)
   
   console.log(`[PGWOS-CRON] Processing notifications at ${now.toISOString()}`);
 
-  // We fetch ALL active subscriptions and then filter in memory for simplicity 
-  // (or we could use complex SQL with intervals, but memory is fine for current scale)
+  // Fetch ALL subscriptions
   const allSubs = await db.select().from(pushSubscriptionsTable).where(
     or(
       eq(pushSubscriptionsTable.morningEnabled, true),
@@ -150,15 +192,28 @@ router.get("/push/cron", async (_req: any, res: any): Promise<void> => {
     )
   );
 
+  // Also fetch all subscriptions (to get ones with hourly/task prefs stored in subscription metadata)
+  const allSubsRaw = await db.select().from(pushSubscriptionsTable);
+
   let processedCount = 0;
 
-  for (const sub of allSubs) {
+  // Get incomplete tasks count (shared for all task-reminder subs)
+  let incompleteTasks = 0;
+  try {
+    const { tasksTable } = await import("@workspace/db");
+    const { ne } = await import("drizzle-orm");
+    const tasks = await db.select().from(tasksTable).where(ne(tasksTable.status, "completed"));
+    incompleteTasks = tasks.length;
+  } catch (_) {}
+
+  for (const sub of allSubsRaw) {
     // Calculate User Local Time
-    // sub.timezoneOffset is minutes from UTC (e.g. 330 for IST)
     const userLocalTime = new Date(now.getTime() + (sub.timezoneOffset || 0) * 60000);
     const hours = String(userLocalTime.getUTCHours()).padStart(2, '0');
     const mins = String(userLocalTime.getUTCMinutes()).padStart(2, '0');
     const currentTime = `${hours}:${mins}`;
+    const localHour = userLocalTime.getUTCHours();
+    const isDaytime = localHour >= 7 && localHour <= 22;
 
     const isMorning = sub.morningEnabled && sub.morningTime === currentTime;
     const isEvening = sub.eveningEnabled && sub.eveningTime === currentTime;
@@ -183,10 +238,39 @@ router.get("/push/cron", async (_req: any, res: any): Promise<void> => {
         icon: "/favicon.svg"
       });
     }
+
+    // Hourly quotes (7am–10pm only, at :00)
+    const subExtra = (sub.subscription as any)?._extra || {};
+    const hourlyEnabled = subExtra.hourlyQuotesEnabled === true;
+    const taskRemindEnabled = subExtra.taskReminderEnabled === true;
+
+    if (isDaytime && hourlyEnabled && mins === "00") {
+      processedCount++;
+      const quote = QUOTES[Math.floor(localHour * 1.7 + now.getDate()) % QUOTES.length];
+      await sendPushToSubscription(sub.subscription, {
+        title: "Hourly Boost 💡",
+        body: quote,
+        tag: "pgwos-quote",
+        icon: "/favicon.svg"
+      });
+    }
+
+    // Task reminders (hourly, 7am–10pm, only if incomplete tasks exist)
+    if (isDaytime && taskRemindEnabled && mins === "00" && incompleteTasks > 0) {
+      processedCount++;
+      await sendPushToSubscription(sub.subscription, {
+        title: `${incompleteTasks} Task${incompleteTasks > 1 ? 's' : ''} Pending ⚡`,
+        body: "You have unfinished tasks. Let's get them done!",
+        tag: "pgwos-tasks",
+        icon: "/favicon.svg",
+        url: "/tasks"
+      });
+    }
   }
 
-  res.json({ processed: processedCount, scanned: allSubs.length });
+  res.json({ processed: processedCount, scanned: allSubsRaw.length });
 });
+
 
 // Local Development Only: Trigger the cron logic every minute automatically
 if (process.env.NODE_ENV !== "production") {
