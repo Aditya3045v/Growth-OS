@@ -52,3 +52,17 @@ Thumbs.db
 .env
 .env.local
 .env.*
+
+# Local diagnostic/log files
+*_error.txt
+*_errors.txt
+*_errors_utf8.txt
+*.log
+api_error.txt
+api_error_utf8.txt
+package_errors.txt
+package_errors_utf8.txt
+lib_errors.txt
+typecheck_errors.txt
+typecheck_errors_2.txt
+typecheck_errors_utf8.txt
